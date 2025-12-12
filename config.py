@@ -1,4 +1,4 @@
-ymax = 600
+ymax = 800
 xmax = 800
 nb_carre = 16
 if nb_carre == 16:

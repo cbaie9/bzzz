@@ -1,6 +1,6 @@
 import tkiteasy as tke # type: ignore
-import start
 import config
+import backend
 
 
 def dessiner_background():
@@ -11,16 +11,98 @@ def dessiner_background():
     for x in range(0,config.xmax,config.taille_carre_x):
         
         for y in range(0,config.ymax,config.taille_carre_y):
-            start.g.pause(0.0001)
-            start.g.update()
+            g.pause(0.0001)
+            g.update()
             if compteur == 1:
-                color = 'black'
+                print(x,y)
+                color = get_couleur_map(x//config.taille_carre_x,y//config.taille_carre_y,True)
                 compteur =0
             else:
-                color = 'white'
+                print(x,y)
+                color = get_couleur_map(x//config.taille_carre_x,y//config.taille_carre_y,False)
                 compteur += 1
-            start.g.dessinerRectangle(x,y,config.taille_carre_x,config.taille_carre_y,color)
+            g.dessinerRectangle(x,y,config.taille_carre_x,config.taille_carre_y,color)
         if x/config.taille_carre_x % 2 == 0:
             compteur = 1
         else: 
             compteur = 0
+def start():
+    x_old = None
+    y_old = None
+    global g  
+    g = tke.ouvrirFenetre(config.xmax, config.ymax)
+    dessiner_background()
+    carre = g.dessinerRectangle(0,0,0,0,'red')
+    while config.play:
+        while True:
+            clic = g.recupererClic()
+            if clic is not None:
+                x = (clic.x - clic.x % config.taille_carre_x)/config.taille_carre_x
+                y = (clic.y - clic.y % config.taille_carre_y)/config.taille_carre_y
+                if y_old == None or x_old == None:
+                    y_old = y
+                    x_old = x
+                if x != x_old or y != y_old:
+                    print(f"y :{y}   | y_old :  {y_old}")
+                    print(f"x :{x}   | x_old :  {x_old}")
+                    if (x+1 == x_old or x-1 == x_old or x == x_old) and (y+1 == y_old or y-1 == y_old or y==y_old):
+                        config.condi = True
+                else:
+                    config.condi = True 
+            if config.condi:
+                config.condi = False
+                break
+        g.supprimer(carre)
+        carre = g.dessinerRectangle(x*config.taille_carre_x,y*config.taille_carre_x,config.taille_carre_x,config.taille_carre_y,'red') # type: ignore
+        
+        y_old = y  # type: ignore  Le y et le x sont forcement defini car on est sortie de la boucle 
+        x_old = x  # type: ignore
+
+
+
+    # Boucle à vide qui attend un clic
+    g.attendreClic()
+
+    # Fermeture fenêtre
+    g.fermerFenetre()
+def get_couleur_map(x:int,y:int,black:bool = False)->str:
+    """
+    Docstring for get_couleur_map
+    
+    :param x: Coordonnée x de la position sur la map
+    :type x: int
+    :param y: Coordonnée y de la position sur la map
+    :type y: int
+    :param black: Est-ce que la case actuelle est une case est noir sinon elle sera blanche par défault
+    :type black: bool
+    :return: Retourne un couleur en str
+    :rtype: str
+    """
+    if backend.map[x][y] == 0:
+        if black:
+            output = config.map_default_color_black
+        else :
+            output = config.map_default_color_white
+    elif backend.map[x][y] == 1:
+        if black:
+            output = config.spawn_equipe_1bk
+        else :
+            output = config.spawn_equipe_1wh
+    elif backend.map[x][y] == 2:
+        if black:
+            output = config.spawn_equipe_2bk
+        else :
+            output = config.spawn_equipe_2wh
+    elif backend.map[x][y] == 3:
+        if black:
+            output = config.spawn_equipe_3bk
+        else:
+            output = config.spawn_equipe_3wh
+    elif backend.map[x][y] == 4:
+        if black:
+            output = config.spawn_equipe_4bk
+        else:
+            output = config.spawn_equipe_4wh
+    else:
+        output = config.map_error_color
+    return output

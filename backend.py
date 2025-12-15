@@ -1,8 +1,8 @@
-import tkiteasy as tke
-# import start as frontend
+#import tkiteasy as tke
+#import start as frontend
 import config 
-from random import * 
-from math import * 
+# from random import * 
+from math import sqrt 
 
 
 # setup des classe système 
@@ -106,5 +106,14 @@ def affichage_matrice(L : list[list[int]]) :
             # print(i,j)
            # L_coordonnées.append((i,j)) 
 
+def case_valide(x:int,y:int,equipe:int)-> bool:
+    
+    if map[x][y] == 0 or map[x][y] == equipe:
+        output = True
+    else :
+        output = False
+    return output
+
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
-affichage_matrice(creation_matrice_map())
+map = creation_matrice_map()
+affichage_matrice(map)

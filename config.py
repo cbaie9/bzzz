@@ -25,3 +25,5 @@ spawn_equipe_3wh :str = 'purple'
 spawn_equipe_4bk :str = 'red'
 spawn_equipe_4wh :str = 'indian red'
 map_error_color :str = 'orange'
+map_flower_color :str = "DeepPink2"
+map_player_color :str = "navy"

@@ -26,13 +26,15 @@ def dessiner_background():
             compteur = 1
         else: 
             compteur = 0
+        
 def start():
     x_old = None
     y_old = None
     global g  
     g = tke.ouvrirFenetre(config.xmax, config.ymax)
     dessiner_background()
-    carre = g.dessinerRectangle(0,0,0,0,'red')
+    dessiner_spawn()
+    carre = g.dessinerRectangle(0,0,0,0, config.map_player_color)
     while config.play:
         while True:
             clic = g.recupererClic()
@@ -53,8 +55,8 @@ def start():
                 config.condi = False
                 break
         g.supprimer(carre)
-        carre = g.dessinerRectangle(x*config.taille_carre_x,y*config.taille_carre_x,config.taille_carre_x,config.taille_carre_y,'red') # type: ignore
-        
+        carre = g.dessinerRectangle(x*config.taille_carre_x,y*config.taille_carre_x,config.taille_carre_x,config.taille_carre_y,config.map_player_color) # type: ignore
+        dessiner_spawn()
         y_old = y  # type: ignore  Le y et le x sont forcement defini car on est sortie de la boucle 
         x_old = x  # type: ignore
 
@@ -106,3 +108,8 @@ def get_couleur_map(x:int,y:int,black:bool = False)->str:
     else:
         output = config.map_error_color
     return output
+def dessiner_spawn():
+    g.afficherImage(config.xmax-config.taille_carre_x,config.ymax-config.taille_carre_y,"./image/spawn/red.png",'center')
+    g.afficherImage(config.taille_carre_x,config.ymax-config.taille_carre_y,"./image/spawn/blue.png",'center')
+    g.afficherImage(config.taille_carre_x,config.taille_carre_y,"./image/spawn/green.png",'center')
+    g.afficherImage(config.xmax-config.taille_carre_x,config.taille_carre_y,"./image/spawn/violet.png",'center')

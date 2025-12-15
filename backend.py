@@ -113,7 +113,28 @@ def case_valide(x:int,y:int,equipe:int)-> bool:
     else :
         output = False
     return output
+def liste_coord_possible(matrice :list[list[int]])-> list[tuple[int,int]]  : 
+    """
+    Renvoie la liste des coordonnées qui ne correspondent pas à un spawn d'une équipe
+    entrée : list
+    sortie : list
+    """
+    L_coord_sans_base :list[tuple[int,int]] = []
 
+    for i in range(int(sqrt(config.nb_carre_x)), int(len(matrice)//2)) : 
+        for j in range(int(sqrt(config.nb_carre_y))) :
+            L_coord_sans_base.append((i,j))
+
+    for i in range(int(len(matrice)//2)) : 
+        for j in range(int(sqrt(config.nb_carre_y)),int(len(matrice)//2)) : 
+            L_coord_sans_base.append((i,j))
+
+    #for i in range(int(sqrt(config.nb_carre_x)),(len(matrice)//2)) :
+        #for j in range(config.nb_carre_y-int(sqrt(config.nb_carre_y)),len(matrice)) :
+            #L_coord_sans_base.append((i,j))
+
+    return L_coord_sans_base
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
+
 map = creation_matrice_map()
 affichage_matrice(map)

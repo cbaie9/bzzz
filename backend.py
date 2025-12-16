@@ -11,7 +11,6 @@ class abeille:
         self.x = x
         self.y = y
         self.equipe = equipe
-
         self.nectar = nectar
         self.classe = classe
         self.etat = etat

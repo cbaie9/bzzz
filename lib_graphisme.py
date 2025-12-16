@@ -3,7 +3,7 @@ import config
 import backend
 
 
-def dessiner_background():
+def dessiner_background(): #quadriage selon la couleur des spawn via la matrice map
     """
     Dessine l'arrière plan du jeu en fonction des constant de base
     """
@@ -14,11 +14,9 @@ def dessiner_background():
             g.pause(0.0001)
             g.update()
             if compteur == 1:
-                print(x,y)
                 color = get_couleur_map(x//config.taille_carre_x,y//config.taille_carre_y,True)
                 compteur =0
             else:
-                print(x,y)
                 color = get_couleur_map(x//config.taille_carre_x,y//config.taille_carre_y,False)
                 compteur += 1
             g.dessinerRectangle(x,y,config.taille_carre_x,config.taille_carre_y,color)
@@ -30,6 +28,7 @@ def dessiner_background():
 def start():
     x_old = None
     y_old = None
+    abeille1 = backend.abeille(0,0,1,0,'smashbro',True)
     global g  
     g = tke.ouvrirFenetre(config.xmax, config.ymax)
     dessiner_background()
@@ -39,15 +38,15 @@ def start():
         while True:
             clic = g.recupererClic()
             if clic is not None:
-                x = (clic.x - clic.x % config.taille_carre_x)/config.taille_carre_x
-                y = (clic.y - clic.y % config.taille_carre_y)/config.taille_carre_y
+                abeille1.x = (clic.x - clic.x % config.taille_carre_x)/config.taille_carre_x
+                abeille1.y = (clic.y - clic.y % config.taille_carre_y)/config.taille_carre_y
                 if y_old == None or x_old == None:
-                    y_old = y
-                    x_old = x
-                if x != x_old or y != y_old:
-                    print(f"y :{y}   | y_old :  {y_old}")
-                    print(f"x :{x}   | x_old :  {x_old}")
-                    if (x+1 == x_old or x-1 == x_old or x == x_old) and (y+1 == y_old or y-1 == y_old or y==y_old):
+                    y_old = abeille1.y
+                    x_old = abeille1.x
+                if abeille1.x != x_old or abeille1.y != y_old:
+                    print(f"y :{abeille1.y}   | y_old :  {y_old}")
+                    print(f"x :{abeille1.x}   | x_old :  {x_old}")
+                    if (abeille1.x+1 == x_old or abeille1.x-1 == x_old or abeille1.x == x_old) and (abeille1.y+1 == y_old or abeille1.y-1 == y_old or abeille1.y==y_old):
                         config.condi = True
                 else:
                     config.condi = True 
@@ -55,10 +54,10 @@ def start():
                 config.condi = False
                 break
         g.supprimer(carre)
-        carre = g.dessinerRectangle(x*config.taille_carre_x,y*config.taille_carre_x,config.taille_carre_x,config.taille_carre_y,config.map_player_color) # type: ignore
+        carre = g.dessinerRectangle(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,config.taille_carre_x,config.taille_carre_y,config.map_player_color) # type: ignore
         dessiner_spawn()
-        y_old = y  # type: ignore  Le y et le x sont forcement defini car on est sortie de la boucle 
-        x_old = x  # type: ignore
+        y_old = abeille1.y  # type: ignore  Le y et le x sont forcement defini car on est sortie de la boucle 
+        x_old = abeille1.x  # type: ignore
 
 
 

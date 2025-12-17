@@ -28,7 +28,7 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
 def start():
     x_old = None
     y_old = None
-    abeille1 = backend.abeille(0,0,1,0,'smashbro',True)
+    abeille1 = backend.abeille(0,0,1,0,'smashbro',True,config.id_actuelle)
     global g  
     g = tke.ouvrirFenetre(config.xmax, config.ymax)
     dessiner_background()
@@ -38,8 +38,8 @@ def start():
         while True:
             clic = g.recupererClic()
             if clic is not None:
-                abeille1.x = (clic.x - clic.x % config.taille_carre_x)/config.taille_carre_x
-                abeille1.y = (clic.y - clic.y % config.taille_carre_y)/config.taille_carre_y
+                abeille1.x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
+                abeille1.y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
                 if y_old == None or x_old == None:
                     y_old = abeille1.y
                     x_old = abeille1.x
@@ -79,6 +79,10 @@ def get_couleur_map(x:int,y:int,black:bool = False)->str:
     :return: Retourne un couleur en str
     :rtype: str
     """
+    if not 0 <= x <= config.nb_carre_x and 0 <= y <= config.nb_carre_y:
+        print(f"erreur de oob x ={x}, y : {y}")
+        print(f"{config.taille_carre_x},   {config.taille_carre_y}")
+        return config.map_error_color
     if backend.map[x][y] == 0:
         if black:
             output = config.map_default_color_black
@@ -104,11 +108,16 @@ def get_couleur_map(x:int,y:int,black:bool = False)->str:
             output = config.spawn_equipe_4bk
         else:
             output = config.spawn_equipe_4wh
+    elif 10 <= backend.map[x][y] <= 100:
+        output = config.map_color_flower
     else:
         output = config.map_error_color
     return output
 def dessiner_spawn():
-    g.afficherImage(config.xmax-config.taille_carre_x,config.ymax-config.taille_carre_y,"./image/spawn/red.png",'center')
-    g.afficherImage(config.taille_carre_x,config.ymax-config.taille_carre_y,"./image/spawn/blue.png",'center')
-    g.afficherImage(config.taille_carre_x,config.taille_carre_y,"./image/spawn/green.png",'center')
-    g.afficherImage(config.xmax-config.taille_carre_x,config.taille_carre_y,"./image/spawn/violet.png",'center')
+    g.afficherImage(config.xmax-config.taille_carre_x,config.ymax-config.taille_carre_y,"./image/spawn/red.png")
+    g.afficherImage(config.taille_carre_x,config.ymax-config.taille_carre_y,"./image/spawn/blue.png","ne")
+    g.afficherImage(config.taille_carre_x,config.taille_carre_y,"./image/spawn/green.png","ne")
+    g.afficherImage(config.xmax-config.taille_carre_x,config.taille_carre_y,"./image/spawn/violet.png","ne")
+# <---------------------------------- >
+if __name__ == "__main__": # Lance le jeu quand lancé seul 
+    start()

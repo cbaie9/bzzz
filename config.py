@@ -2,12 +2,8 @@ from math import sqrt
 ymax :int = 800
 xmax :int = 800
 nb_carre :int = 16
-if nb_carre == 16: # type: ignore
-    nb_carre_y :int = 16
-    nb_carre_x :int = 16
-else:
-    nb_carre_x = nb_carre
-    nb_carre_y = nb_carre
+nb_carre_x = nb_carre
+nb_carre_y = nb_carre
 taille_carre :int = xmax
 taille_carre_x = int(xmax//nb_carre_x)
 taille_carre_y = int(ymax//nb_carre_y)
@@ -43,9 +39,12 @@ list_abeille_J3 :list[int] = []
 list_abeille_J3 :list[int] = []
 # ----------------------------
 # Gestion des fleurs
-nectar_initial = 10
-max_nectar = 45
-
+nectar_initial :int = 10
+max_nectar :int = 45
+nb_fleur :int = nb_carre//4 # Doit être divisible /4
+# ---------------------------
+# Gestion des Image des spawn
+taille_image_spawn :int = 50
 
 # -----------------------
 # Verification des règles de configuration
@@ -55,3 +54,5 @@ if nb_carre % 2 != 0:
     assert(f"Problème de configuration : Le Nombre de Cases n'est pas Disivible par 2 | Valeur Acteuelle : {nb_carre}")
 if time_out % 4 != 0:
     assert(f"Problème de configuration : Le nombre de tour max ( Time out ) n'est pas Disivible par 4 | Valeur Acteuelle : {time_out}")
+if nb_fleur % 4 != 0:
+    assert(f"Problème de configuration : Le nombre de fleur n'est pas Disivible par 4 | Valeur Acteuelle : {nb_fleur}")

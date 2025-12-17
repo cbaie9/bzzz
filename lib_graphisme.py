@@ -114,10 +114,10 @@ def get_couleur_map(x:int,y:int,black:bool = False)->str:
         output = config.map_error_color
     return output
 def dessiner_spawn():
-    g.afficherImage(config.xmax-config.taille_carre_x,config.ymax-config.taille_carre_y,"./image/spawn/red.png")
-    g.afficherImage(config.taille_carre_x,config.ymax-config.taille_carre_y,"./image/spawn/blue.png","ne")
-    g.afficherImage(config.taille_carre_x,config.taille_carre_y,"./image/spawn/green.png","ne")
-    g.afficherImage(config.xmax-config.taille_carre_x,config.taille_carre_y,"./image/spawn/violet.png","ne")
+    g.afficherImage(config.xmax-config.taille_image_spawn,config.ymax-config.taille_image_spawn,"./image/spawn/red.png")
+    g.afficherImage(0,config.ymax-config.taille_image_spawn,"./image/spawn/blue.png")
+    g.afficherImage(0,0,"./image/spawn/green.png")
+    g.afficherImage(config.xmax-config.taille_image_spawn,0,"./image/spawn/violet.png")
 # <---------------------------------- >
 if __name__ == "__main__": # Lance le jeu quand lancé seul 
     start()

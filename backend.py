@@ -1,7 +1,7 @@
 #import tkiteasy as tke
-#import start as frontend
 import config 
 from random import choice
+import lib_graphisme
 
 
 # setup des classe système 
@@ -125,11 +125,11 @@ def emplacement_fleurs(L_coord_case : list[tuple[int,int]]) :
     """
     L_coord_fleur :list[tuple[int,int]]= []
     L_coord_fleur_temp :list[tuple[int,int]]= []
-    for i in range(int(config.nb_carre//4)) :  #on choisit au hasard 4 coordonnées pour les fleurs
+    for i in range(int(config.nb_fleur)) :  #on choisit au hasard 4 coordonnées pour les fleurs
         L_coord_fleur.append(choice(L_coord_case))
     
 
-    for i in range(4) : #on construit la symétrie 
+    for i in range(config.nb_fleur) : #on construit la symétrie 
         x,y = L_coord_fleur[i]
         L_coord_fleur_temp.append((config.nb_carre_x-1-x,y))
         L_coord_fleur_temp.append((x,config.nb_carre_x-1-y))
@@ -161,3 +161,6 @@ def liste_coord_possible()-> list[tuple[int,int]]:
 
 map = creation_matrice_map()
 affichage_matrice(map)
+if __name__ == "__main__": # Lance le jeu quand lancé seul 
+    lib_graphisme.start()
+

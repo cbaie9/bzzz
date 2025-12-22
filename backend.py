@@ -1,6 +1,7 @@
 #import tkiteasy as tke
 import config 
 from random import choice
+import random
 import lib_graphisme
 
 
@@ -111,10 +112,37 @@ def affichage_matrice(L : list[list[int]]) :
             # print(i,j)
            # L_coordonnées.append((i,j)) 
 
-def case_valide(x:int,y:int,equipe:int)-> bool:
+def case_valide(x:int,y:int,equipe:int,class_ab :str,y_old:int,x_old:int)-> bool:
+    """
+    Docstring for case_valide
+
+    Renvoie si on peut se déplacer sur la case en fonction de la position actuel, de l'équipe, de la classe de l'abeille et la position où le joueur veut se déplacer
     
-    if map[x][y] == 0 or map[x][y] == equipe:
-        output = True
+    :param x: Position x ou le joueur a cliquer / veut se déplacer
+    :type x: int
+    :param y: Position y ou le joueur a cliquer / veut se déplacer
+    :type y: int
+    :param equipe: équipe du joueur
+    :type equipe: int
+    :param class_ab: Classe de l'abeille que le joueur veut déplacer
+    :type class_ab: str
+    :param y_old: Position y où l'abeille est actuellement
+    :type y_old: int
+    :param x_old: Position x où l'abeille est actuellement
+    :type x_old: int
+    :return: Renvoie si la case est valide
+    :rtype: bool
+    """
+    if map[x][y] == 0 or (map[x][y] == equipe or (10 <= map[x][y] <= 100 )):
+        output = False
+        if class_ab == 'ouvrière' or class_ab == 'bourdon':
+            if ((x_old+1 == x or x_old == x or x_old-1 == x) and y == y_old) or (x_old == x and (y == y_old or y == y_old+1 or y == y_old-1)):
+                output = True
+        elif class_ab == 'eclaireuse':
+            if ((x_old+1 == x) or (x_old == x) or (x_old-1 == x)) and ((y == y_old) or (y == y_old+1) or (y == y_old-1)):
+                output = True
+        elif class_ab == 'debug':
+            output = True
     else :
         output = False
     return output
@@ -157,6 +185,16 @@ def liste_coord_possible()-> list[tuple[int,int]]:
             L_coord_sans_base.append((i,j))
 
     return L_coord_sans_base
+def velo_menu() -> tuple[int,int]:
+    if random.randint(1,2) == 1: # randomisation de la direction de lancement (axe x)
+        vx = 10
+    else :
+        vx = -10
+    if random.randint(1,2) == 1: # randomisation de la direction de lancement (axe y)
+        vy = 10
+    else :
+        vy = -10
+    return vx,vy
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 
 map = creation_matrice_map()

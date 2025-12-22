@@ -1,7 +1,6 @@
 import tkiteasy as tke # type: ignore
 import config
 import backend
-import random
 
 
 def dessiner_background(): #quadriage selon la couleur des spawn via la matrice map
@@ -29,7 +28,7 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
 def start():
     x_old = None
     y_old = None
-    abeille1 = backend.abeille(0,0,1,0,'smashbro',True,config.id_actuelle)
+    abeille1 = backend.abeille(0,0,1,0,'eclaireuse',True,config.id_actuelle)
     global g  
     g = tke.ouvrirFenetre(config.xmax, config.ymax)
     dessiner_background()
@@ -41,13 +40,15 @@ def start():
             if clic is not None:
                 abeille1.x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
                 abeille1.y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
+                if abeille1.y == y_old and abeille1.x == x_old:
+                    pass
                 if y_old == None or x_old == None:
                     y_old = abeille1.y
                     x_old = abeille1.x
                 if abeille1.x != x_old or abeille1.y != y_old:
                     print(f"y :{abeille1.y}   | y_old :  {y_old}")
                     print(f"x :{abeille1.x}   | x_old :  {x_old}")
-                    if (abeille1.x+1 == x_old or abeille1.x-1 == x_old or abeille1.x == x_old) and (abeille1.y+1 == y_old or abeille1.y-1 == y_old or abeille1.y==y_old):
+                    if backend.case_valide(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,y_old,x_old):
                         config.condi = True
                 else:
                     config.condi = True 
@@ -125,6 +126,54 @@ def dessiner_spawn():
 # <---------------------------------- >
 def menu(): # Menu du jeu
     global g 
+    menu_background()
+    carre = g.afficherImage(config.taille_mini/2,config.taille_mini/2,'./image/abeille_menu.png')  # initialisation de l'abeille du menu "carre"
+    vx,vy = backend.velo_menu() # direction aléatoire
+    while True: # boucle infini pour l'interface menu
+            g.deplacer(carre,vx,vy)
+            g.pause(0.05)
+
+            clic = g.recupererClic()
+            if clic is not None: 
+                # boutons
+                    ### colision du bouton jouer
+                if ((config.taille_mini/2)-(config.taille_mini/4)) <= clic.x <= ((config.taille_mini/2)-(config.taille_mini/4))+config.taille_mini/2 : # collsion x bouton jouer
+                    if ((config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16)) <= clic.y <= ((config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16))+config.taille_mini/8:
+                        break
+                ### action réaliser quand on fait un clic
+                vx,vy = backend.velo_menu() # direction aléatoire
+                g.supprimer(carre) # suppresion de l'ancien carre
+                # calcul d'une marge de sécurité pour éviter un rebond infini 
+                if clic.x > config.taille_mini/2:
+                    marge_mini_x = config.taille_texture_abeille
+                else:
+                    marge_mini_x = 0
+                if clic.y > config.taille_mini/2:
+                    marge_mini_y = config.taille_texture_abeille
+                else:
+                    marge_mini_y = 0
+                # calcul des coordonnées où sera posé l'image
+                x = (clic.x)-marge_mini_x
+                y = (clic.y)-marge_mini_y
+                carre = g.afficherImage(x,y,'./image/abeille_menu.png')
+                #### fin
+            if carre.x <= 0 or carre.x+50 > config.taille_mini : # colision avec les mur de l'interface ( gauche + droite)
+                vx *= -1
+                if vx > 50:  # Sécurité pour que la vitesse n'aille pas trop haute
+                    vx = 50
+            elif carre.y <= 0 or carre.y+50 >= config.taille_mini : # colision avec les mur de l'interface ( haut + bas)
+                vy *= -1
+                if vy > 50 :
+                    vy = 50
+            elif carre.x <= -5 or carre.x+50 > config.taille_mini+5 or carre.y <= -5 or carre.y+50 >= config.taille_mini+5 :
+                g.supprimer(carre)
+                carre = g.afficherImage(config.taille_mini/2,config.taille_mini/2,'./image/abeille_menu.png')
+
+    # Fermeture fenêtre et lancement du jeu
+    g.fermerFenetre()
+    start()
+def menu_background():
+    global g
     g = tke.ouvrirFenetre(config.taille_mini, config.taille_mini)
     g.afficherImage(0,0,'./image/background_menu.png')
     # titre
@@ -133,49 +182,5 @@ def menu(): # Menu du jeu
     # btn jouer
     g.dessinerRectangle((config.taille_mini/2)-(config.taille_mini/4),(config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16),config.taille_mini/2,config.taille_mini/8,'black')
     g.afficherTexte("Jouer",config.taille_mini/2,config.taille_mini-config.taille_mini/8,'white')
-    
-    carre = g.dessinerRectangle(10,10,50,50,'red')  # initialisation de l'abeille du menu "carre"
-    g.supprimer(carre)
-    vx = 10 # definition de la veloctée de l'abeille
-    vy = 10
-    while True: # boucle infini pour l'interface menu
-        
-        while True: # boucle 'infini' pour récupere le click
-            clic = g.recupererClic()
-            if clic is not None:
-                break
-            if carre.x <= 0 or carre.x+50 > config.taille_mini : # colision avec les mur de l'interface ( gauche + droite)
-                vx *= -1
-                if vx > 50:  # Sécurité pour que la vitesse n'aille pas trop haute
-                    vx = 50
-            if carre.y <= 0 or carre.y+50 >= config.taille_mini : # colision avec les mur de l'interface ( haut + bas)
-                vy *= -1
-                if vy > 50 :
-                    vy = 50
-            g.deplacer(carre,vx,vy)
-            g.pause(0.05)
-
-        ### action réaliser quand on fait un lcik
-        if random.randint(1,2) == 1: # randomisation de la direction de lancement (axe x)
-            vx = 10
-        else :
-            vx = -10
-        if random.randint(1,2) == 1: # randomisation de la direction de lancement (axe y)
-            vy = 10
-        else :
-            vy = -10
-        g.supprimer(carre)
-        x = (clic.x)-50
-        y = (clic.y)-50
-        carre = g.afficherImage(x,y,'./image/abeille_menu.png')
-        #### fin
-        ### colision du bouton jouer
-        if ((config.taille_mini/2)-(config.taille_mini/4)) <= clic.x <= ((config.taille_mini/2)-(config.taille_mini/4))+config.taille_mini/2 : # collsion x bouton jouer
-            if ((config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16)) <= clic.y <= ((config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16))+config.taille_mini/8:
-                break
-    # Fermeture fenêtre et lancement du jeu
-    g.fermerFenetre()
-    start()
-
 if __name__ == "__main__": # Lance le jeu quand lancé seul 
     menu()

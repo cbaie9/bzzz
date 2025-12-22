@@ -48,6 +48,7 @@ taille_image_spawn :int = 50
 # --------------------------
 # Pre-lunch Inf
 taille_mini :int = 300
+taille_texture_abeille :int = 50 # taille de la texture abeille_menu.png
 # -----------------------
 # Verification des règles de configuration
 if max_nectar % 3 != 0:

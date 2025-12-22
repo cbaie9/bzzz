@@ -1,6 +1,7 @@
 import tkiteasy as tke # type: ignore
 import config
 import backend
+import random
 
 
 def dessiner_background(): #quadriage selon la couleur des spawn via la matrice map
@@ -54,7 +55,10 @@ def start():
                 config.condi = False
                 break
         g.supprimer(carre)
-        carre = g.dessinerRectangle(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,config.taille_carre_x,config.taille_carre_y,config.map_player_color) # type: ignore
+        if config.nb_carre >= 16:
+            carre = g.afficherImage(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,'./image/abeille_menu.png') # image de joueur normal
+        else :
+            carre = g.afficherImage(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,'./image/abeille_menu_mini.png') # image de joueur en mode mini ( prevu pour nb_carre = 8)
         dessiner_spawn()
         y_old = abeille1.y  # type: ignore  Le y et le x sont forcement defini car on est sortie de la boucle 
         x_old = abeille1.x  # type: ignore
@@ -119,5 +123,59 @@ def dessiner_spawn():
     g.afficherImage(0,0,"./image/spawn/green.png")
     g.afficherImage(config.xmax-config.taille_image_spawn,0,"./image/spawn/violet.png")
 # <---------------------------------- >
-if __name__ == "__main__": # Lance le jeu quand lancé seul 
+def menu(): # Menu du jeu
+    global g 
+    g = tke.ouvrirFenetre(config.taille_mini, config.taille_mini)
+    g.afficherImage(0,0,'./image/background_menu.png')
+    # titre
+    g.dessinerRectangle((config.taille_mini/2)-(config.taille_mini/4),(config.taille_mini/8)-(config.taille_mini/16),config.taille_mini/2,config.taille_mini/8,'yellow')
+    g.afficherTexte("BZZZ",config.taille_mini/2,config.taille_mini/8,'red')
+    # btn jouer
+    g.dessinerRectangle((config.taille_mini/2)-(config.taille_mini/4),(config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16),config.taille_mini/2,config.taille_mini/8,'black')
+    g.afficherTexte("Jouer",config.taille_mini/2,config.taille_mini-config.taille_mini/8,'white')
+    
+    carre = g.dessinerRectangle(10,10,50,50,'red')  # initialisation de l'abeille du menu "carre"
+    g.supprimer(carre)
+    vx = 10 # definition de la veloctée de l'abeille
+    vy = 10
+    while True: # boucle infini pour l'interface menu
+        
+        while True: # boucle 'infini' pour récupere le click
+            clic = g.recupererClic()
+            if clic is not None:
+                break
+            if carre.x <= 0 or carre.x+50 > config.taille_mini : # colision avec les mur de l'interface ( gauche + droite)
+                vx *= -1
+                if vx > 50:  # Sécurité pour que la vitesse n'aille pas trop haute
+                    vx = 50
+            if carre.y <= 0 or carre.y+50 >= config.taille_mini : # colision avec les mur de l'interface ( haut + bas)
+                vy *= -1
+                if vy > 50 :
+                    vy = 50
+            g.deplacer(carre,vx,vy)
+            g.pause(0.05)
+
+        ### action réaliser quand on fait un lcik
+        if random.randint(1,2) == 1: # randomisation de la direction de lancement (axe x)
+            vx = 10
+        else :
+            vx = -10
+        if random.randint(1,2) == 1: # randomisation de la direction de lancement (axe y)
+            vy = 10
+        else :
+            vy = -10
+        g.supprimer(carre)
+        x = (clic.x)-50
+        y = (clic.y)-50
+        carre = g.afficherImage(x,y,'./image/abeille_menu.png')
+        #### fin
+        ### colision du bouton jouer
+        if ((config.taille_mini/2)-(config.taille_mini/4)) <= clic.x <= ((config.taille_mini/2)-(config.taille_mini/4))+config.taille_mini/2 : # collsion x bouton jouer
+            if ((config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16)) <= clic.y <= ((config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16))+config.taille_mini/8:
+                break
+    # Fermeture fenêtre et lancement du jeu
+    g.fermerFenetre()
     start()
+
+if __name__ == "__main__": # Lance le jeu quand lancé seul 
+    menu()

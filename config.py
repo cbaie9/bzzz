@@ -45,7 +45,9 @@ nb_fleur :int = nb_carre//4 # Doit être divisible /4
 # ---------------------------
 # Gestion des Image des spawn
 taille_image_spawn :int = 50
-
+# --------------------------
+# Pre-lunch Inf
+taille_mini :int = 300
 # -----------------------
 # Verification des règles de configuration
 if max_nectar % 3 != 0:

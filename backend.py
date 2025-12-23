@@ -133,6 +133,8 @@ def case_valide(x:int,y:int,equipe:int,class_ab :str,y_old:int,x_old:int)-> bool
     :return: Renvoie si la case est valide
     :rtype: bool
     """
+    if  x > 15: # empêche les déplacement dans la partie stat de l'écran
+        return False
     if map[x][y] == 0 or (map[x][y] == equipe or (10 <= map[x][y] <= 100 )):
         output = False
         if class_ab == 'ouvrière' or class_ab == 'bourdon':
@@ -200,5 +202,5 @@ def velo_menu() -> tuple[int,int]:
 map = creation_matrice_map()
 affichage_matrice(map)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 
-    lib_graphisme.start()
+    lib_graphisme.menu()
 

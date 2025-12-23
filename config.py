@@ -1,12 +1,14 @@
 from math import sqrt
-ymax :int = 800
-xmax :int = 800
+ymax_game :int = 800
+xmax_game :int = 800
+xmax_stat :int = xmax_game//2
+xmax :int = xmax_game+xmax_stat
 nb_carre :int = 16
 nb_carre_x = nb_carre
 nb_carre_y = nb_carre
-taille_carre :int = xmax
-taille_carre_x = int(xmax//nb_carre_x)
-taille_carre_y = int(ymax//nb_carre_y)
+taille_carre :int = xmax_game
+taille_carre_x = int(xmax_game//nb_carre_x)
+taille_carre_y = int(ymax_game//nb_carre_y)
 play :bool = True  # A mettre sur faux pour couper le jeu | interrupteur général
 condi :bool = False
 taille_spawn_x :int = round(sqrt(nb_carre_x))
@@ -28,7 +30,7 @@ spawn_equipe_4bk :str = 'red'
 spawn_equipe_4wh :str = 'indian red'
 map_error_color :str = 'orange'
 map_flower_color :str = "DeepPink2"
-map_player_color :str = "navy"
+map_player_color :str = "navy" # n'est plus utilisé actuellement -> /image/abeille_menu.png
 map_color_flower :str = "cyan"
 # ---------------------------
 # Gestion des Abeilles

@@ -1,2 +1,2 @@
 import lib_graphisme
-lib_graphisme.start()
+lib_graphisme.menu()

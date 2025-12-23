@@ -8,9 +8,9 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
     Dessine l'arrière plan du jeu en fonction des constant de base
     """
     compteur = 0
-    for x in range(0,config.xmax,config.taille_carre_x):
+    for x in range(0,config.xmax_game,config.taille_carre_x):
         
-        for y in range(0,config.ymax,config.taille_carre_y):
+        for y in range(0,config.ymax_game,config.taille_carre_y):
             g.pause(0.0001)
             g.update()
             if compteur == 1:
@@ -30,18 +30,22 @@ def start():
     y_old = None
     abeille1 = backend.abeille(0,0,1,0,'eclaireuse',True,config.id_actuelle)
     global g  
-    g = tke.ouvrirFenetre(config.xmax, config.ymax)
+    g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     dessiner_background()
     dessiner_spawn()
-    carre = g.dessinerRectangle(0,0,0,0, config.map_player_color)
+    stat_part()
+    carre = g.afficherImage(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,'./image/abeille_menu.png')
     while config.play:
         while True:
             clic = g.recupererClic()
             if clic is not None:
-                abeille1.x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
+                if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15:
+                    abeille1.x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
+                else:
+                    abeille1.x = 15
                 abeille1.y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
                 if abeille1.y == y_old and abeille1.x == x_old:
-                    pass
+                    pass # developper le système de case rouge
                 if y_old == None or x_old == None:
                     y_old = abeille1.y
                     x_old = abeille1.x
@@ -119,10 +123,10 @@ def get_couleur_map(x:int,y:int,black:bool = False)->str:
         output = config.map_error_color
     return output
 def dessiner_spawn():
-    g.afficherImage(config.xmax-config.taille_image_spawn,config.ymax-config.taille_image_spawn,"./image/spawn/red.png")
-    g.afficherImage(0,config.ymax-config.taille_image_spawn,"./image/spawn/blue.png")
+    g.afficherImage(config.xmax_game-config.taille_image_spawn,config.ymax_game-config.taille_image_spawn,"./image/spawn/red.png")
+    g.afficherImage(0,config.ymax_game-config.taille_image_spawn,"./image/spawn/blue.png")
     g.afficherImage(0,0,"./image/spawn/green.png")
-    g.afficherImage(config.xmax-config.taille_image_spawn,0,"./image/spawn/violet.png")
+    g.afficherImage(config.xmax_game-config.taille_image_spawn,0,"./image/spawn/violet.png")
 # <---------------------------------- >
 def menu(): # Menu du jeu
     global g 
@@ -182,5 +186,14 @@ def menu_background():
     # btn jouer
     g.dessinerRectangle((config.taille_mini/2)-(config.taille_mini/4),(config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16),config.taille_mini/2,config.taille_mini/8,'black')
     g.afficherTexte("Jouer",config.taille_mini/2,config.taille_mini-config.taille_mini/8,'white')
+
+def stat_part():
+    global g
+    g.dessinerRectangle(config.xmax_game,0,config.xmax_stat,config.ymax_game,'gray')
+    g.afficherTexte('J1',config.xmax_game+20,20,'red',20)
+
+
+
+### lanecement du jeu ( info -> mettre les fonction avant pls)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 
     menu()

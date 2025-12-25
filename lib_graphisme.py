@@ -26,8 +26,8 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
             compteur = 0
         
 def start():
-    x_old = None
-    y_old = None
+    x_old = 0
+    y_old = 0
     abeille1 = backend.abeille(0,0,1,0,'eclaireuse',True,config.id_actuelle)
     global g  
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
@@ -45,17 +45,10 @@ def start():
                     abeille1.x = 15
                 abeille1.y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
                 if abeille1.y == y_old and abeille1.x == x_old:
-                    pass # developper le système de case rouge
-                if y_old == None or x_old == None:
-                    y_old = abeille1.y
-                    x_old = abeille1.x
-                if abeille1.x != x_old or abeille1.y != y_old:
-                    print(f"y :{abeille1.y}   | y_old :  {y_old}")
-                    print(f"x :{abeille1.x}   | x_old :  {x_old}")
-                    if backend.case_valide(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,y_old,x_old):
-                        config.condi = True
-                else:
-                    config.condi = True 
+                    pass
+                    #dessiner_case_deplacement(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,y_old,x_old) # developper le système de case rouge
+                config.condi = backend.case_valide(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,y_old,x_old)
+
             if config.condi:
                 config.condi = False
                 break
@@ -192,6 +185,12 @@ def stat_part():
     g.dessinerRectangle(config.xmax_game,0,config.xmax_stat,config.ymax_game,'gray')
     g.afficherTexte('J1',config.xmax_game+20,20,'red',20)
 
+def dessiner_case_deplacement(x:int , y:int,equipe:int,class_ab:str,y_old:int,x_old:int):
+    liste = backend.get_list_deplacement(x,y)
+    for x_list,y_list in liste:
+        if backend.case_valide(x_list,y_list,equipe,class_ab,y_old,x_old):
+            g.dessinerRectangle(x*config.taille_carre_x,y*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,config.map_player_color)
+            print("feur")
 
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)

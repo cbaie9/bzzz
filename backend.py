@@ -197,6 +197,41 @@ def velo_menu() -> tuple[int,int]:
     else :
         vy = -10
     return vx,vy
+def get_list_deplacement(x :int, y:int) -> list[tuple[int,int]]:
+    """
+    Docstring for get_list_deplacement
+    - Renvoie une liste preliminaire pour l'affichage des case déplacable
+
+    :param x: Position actuelle du joueur ( axe x )
+    :type x: int
+    :param y: Position actuelle du joueur ( axe y )
+    :type y: int
+    :return: Liste des position potencielle où le joueur peut se déplacer
+    :rtype: list[tuple[int, int]]
+    """
+    list_deplace :list[tuple[(int,int)]] = []
+    if x > 0 : # première colonne
+        if y > 0:
+            list_deplace.append(((x-1,y-1)))
+        list_deplace.append((x-1,y))
+        if y < config.nb_carre-y:
+            list_deplace.append((x-1,y+1))
+    # deuxième colonne
+    if y > 0:
+        list_deplace.append((x,y-1))
+    list_deplace.append((x,y)) # deplacement sur place ( ne bouge pas)
+    if y < config.nb_carre-y:
+            list_deplace.append((x,y+1))
+    if x < config.nb_carre_x : # trosième colonne
+        if y > 0:
+            list_deplace.append((x+1,y-1))
+        list_deplace.append((x+1,y))
+        if y < config.nb_carre-y:
+            list_deplace.append((x+1,y+1))
+    print(list_deplace)
+    return list_deplace
+    
+
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 
 map = creation_matrice_map()

@@ -11,12 +11,11 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
     for x in range(0,config.xmax_game,config.taille_carre_x):
         
         for y in range(0,config.ymax_game,config.taille_carre_y):
-            g.update()
             if compteur == 1:
-                color = get_couleur_map(x//config.taille_carre_x,y//config.taille_carre_y,True)
+                color = get_couleur_map(x//config.taille_carre_x,y//config.taille_carre_y)
                 compteur =0
             else:
-                color = get_couleur_map(x//config.taille_carre_x,y//config.taille_carre_y,False)
+                color = get_couleur_map(x//config.taille_carre_x,y//config.taille_carre_y)
                 compteur += 1
             g.dessinerRectangle(x,y,config.taille_carre_x,config.taille_carre_y,color)
         if x/config.taille_carre_x % 2 == 0:
@@ -25,48 +24,39 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
             compteur = 0
         
 def start():
-    x_old = 0
-    y_old = 0
-    abeille1 = backend.abeille(0,0,1,0,'eclaireuse',True,config.id_actuelle)
+    abeille1 = backend.abeille(0,0,1,0,'eclaireuse',True,config.id_actuelle,0,0)
     global g  
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     actualisation_background()
     carre = g.afficherImage(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,'./image/abeille_menu.png')
     while config.play:
-        while True:
-            clic = g.recupererClic()
-            if clic is not None:
-                actualisation_background()
-                if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15:
-                    abeille1.x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
-                else:
-                    abeille1.x = 15
-                abeille1.y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
-                if abeille1.y == y_old and abeille1.x == x_old:
-                    dessiner_case_deplacement(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,y_old,x_old) # developper le système de case rouge
-                config.condi = backend.case_valide(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,y_old,x_old)
-
-            if config.condi:
-                config.condi = False
-                break
-        g.supprimer(carre)
-        
-        if config.nb_carre >= 16:
-            carre = g.afficherImage(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,'./image/abeille_menu.png') # image de joueur normal
-        else :
-            carre = g.afficherImage(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,'./image/abeille_menu_mini.png') # image de joueur en mode mini ( prevu pour nb_carre = 8)
-        dessiner_spawn()
-        y_old = abeille1.y  # type: ignore  Le y et le x sont forcement defini car on est sortie de la boucle 
-        x_old = abeille1.x  # type: ignore
-
-
-
+        clic = g.recupererClic()
+        dessiner_case_deplacement(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,abeille1.y_old,abeille1.x_old)
+        afficher_abeille(abeille1,carre)
+        if clic is not None:
+            # calcul des collision
+            dessiner_case_deplacement(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,abeille1.y_old,abeille1.x_old,False)
+            if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
+                abeille1.x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
+            else:
+                abeille1.x = 15 # si le joueur essaie, le colle à la bordure
+            abeille1.y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
+            # previsualisation des déplacement
+            
+            # est-ce que la case choisi est la valide
+            if backend.case_valide(abeille1.x,abeille1.y,abeille1.equipe,abeille1.classe,abeille1.y_old,abeille1.x_old):
+                # deplacement du joueur
+                
+                afficher_abeille(abeille1,carre)
+                dessiner_spawn()
+                abeille1.y_old = abeille1.y
+                abeille1.x_old = abeille1.x
     # Boucle à vide qui attend un clic
     g.attendreClic()
 
     # Fermeture fenêtre
     g.fermerFenetre()
-def get_couleur_map(x:int,y:int,black:bool = False)->str:
+def get_couleur_map(x:int,y:int)->str:
     """
     Docstring for get_couleur_map
     
@@ -74,15 +64,19 @@ def get_couleur_map(x:int,y:int,black:bool = False)->str:
     :type x: int
     :param y: Coordonnée y de la position sur la map
     :type y: int
-    :param black: Est-ce que la case actuelle est une case est noir sinon elle sera blanche par défault
-    :type black: bool
     :return: Retourne un couleur en str
     :rtype: str
     """
+    # determine si la case demandé est dans la map
     if not 0 <= x <= config.nb_carre_x and 0 <= y <= config.nb_carre_y:
         print(f"erreur de oob x ={x}, y : {y}")
         print(f"{config.taille_carre_x},   {config.taille_carre_y}")
         return config.map_error_color
+    # determine la couleur du damier
+    if (x % 2 == 0 and y % 2 == 0) or (x%2 == 1 and y % 2 == 1) :
+        black = False
+    else :
+        black = True
     if backend.map[x][y] == 0:
         if black:
             output = config.map_default_color_black
@@ -183,7 +177,7 @@ def stat_part():
     g.dessinerRectangle(config.xmax_game,0,config.xmax_stat,config.ymax_game,'gray')
     g.afficherTexte('J1',config.xmax_game+20,20,'red',20)
 
-def dessiner_case_deplacement(x:int , y:int,equipe:int,class_ab:str,y_old:int,x_old:int):
+def dessiner_case_deplacement(x:int , y:int,equipe:int,class_ab:str,y_old:int,x_old:int, ecrire:bool = True):
     """
     Docstring for dessiner_case_deplacement
 
@@ -201,12 +195,16 @@ def dessiner_case_deplacement(x:int , y:int,equipe:int,class_ab:str,y_old:int,x_
     :type y_old: int
     :param x_old: Position x où l'abeille est actuellement
     :type x_old: int
+    :ecrire: Est-ce que les programme affiche ou supprime les cases | Booléen
     """
     liste = backend.get_list_deplacement(x,y)
     for x_list,y_list in liste:
-        if backend.case_valide(x_list,y_list,equipe,class_ab,y_old,x_old):
-            g.dessinerRectangle(x_list*config.taille_carre_x,y_list*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,config.map_player_color)
-            #debug print(f"feur xl :{x_list} ||| yl : {y_list}")
+            if backend.case_valide(x_list,y_list,equipe,class_ab,y_old,x_old):
+                if ecrire:
+                    g.dessinerRectangle(x_list*config.taille_carre_x,y_list*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,config.map_player_color)
+                else :
+                    g.dessinerRectangle(x_list*config.taille_carre_x,y_list*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,get_couleur_map(x_list,y_list))
+                #debug print(f"feur xl :{x_list} ||| yl : {y_list}"))
 def actualisation_background():
     """
     Docstring for actualisation_background
@@ -216,6 +214,12 @@ def actualisation_background():
     dessiner_background()
     dessiner_spawn()
     stat_part()
+def afficher_abeille(abeille:backend.abeille,carre:tke.ObjetGraphique):
+    g.supprimer(carre)
+    if config.nb_carre >= 16:
+        carre = g.afficherImage(abeille.x_old*config.taille_carre_x,abeille.y_old*config.taille_carre_x,'./image/abeille_menu.png') # image de joueur normal
+    else :
+        carre = g.afficherImage(abeille.x_old*config.taille_carre_x,abeille.y_old*config.taille_carre_x,'./image/abeille_menu_mini.png') # image de joueur en mode mini ( prevu pour nb_carre = 8)
 
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)

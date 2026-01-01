@@ -7,7 +7,7 @@ import lib_graphisme
 
 # setup des classe système 
 class abeille:
-    def __init__(self, x:int, y:int, equipe:int, nectar:int, classe:str, etat:bool, id:int):
+    def __init__(self, x:int, y:int, equipe:int, nectar:int, classe:str, etat:bool, id:int ,x_old :int, y_old : int):
         self.x :int = x # Postion x du l'abeille
         self.y :int = y # Postion y de d'abeille
         self.equipe :int = equipe # Numero de l'équipe de l'abeille (Entre 1 et 4 compris)
@@ -15,6 +15,8 @@ class abeille:
         self.classe :str = classe # Classe de l'abeille (Esclaireuse etc)
         self.etat :bool = etat # True = Vivant | False = KO
         self.id :int = id # id de l'abeille UNIQUE 
+        self.x_old :int = x_old
+        self.y_old :int = y_old
 
 
 def creation_matrice_perso() -> list[list[int]]:
@@ -210,23 +212,25 @@ def get_list_deplacement(x :int, y:int) -> list[tuple[int,int]]:
     :rtype: list[tuple[int, int]]
     """
     list_deplace :list[tuple[(int,int)]] = []
-    if x > 0 : # première colonne
+    # première colonne
+    if x > 0 :
         if y > 0:
             list_deplace.append(((x-1,y-1)))
         list_deplace.append((x-1,y))
-        if y < config.nb_carre-y:
+        if y < config.nb_carre:
             list_deplace.append((x-1,y+1))
     # deuxième colonne
     if y > 0:
         list_deplace.append((x,y-1))
     list_deplace.append((x,y)) # deplacement sur place ( ne bouge pas)
-    if y < config.nb_carre-y:
+    if y < config.nb_carre:
             list_deplace.append((x,y+1))
-    if x < config.nb_carre_x : # trosième colonne
+    # trosième colonne
+    if x < config.nb_carre_x : 
         if y > 0:
             list_deplace.append((x+1,y-1))
         list_deplace.append((x+1,y))
-        if y < config.nb_carre-y:
+        if y < config.nb_carre:
             list_deplace.append((x+1,y+1))
     print(list_deplace)
     return list_deplace

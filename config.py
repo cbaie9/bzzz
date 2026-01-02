@@ -35,13 +35,11 @@ map_color_flower :str = "cyan"
 # ---------------------------
 # Gestion des Abeilles
 id_actuelle :int = 0
-list_abeille_J1 :list[int] = []
-list_abeille_J2 :list[int] = []
-list_abeille_J3 :list[int] = []
-list_abeille_J3 :list[int] = []
+# voir backend pour les joueur
 # ----------------------------
 # Gestion des fleurs
 nectar_initial :int = 10
+nectar_par_butinage = 3
 max_nectar :int = 45
 nb_fleur :int = nb_carre//4 # Doit être divisible /4
 # ---------------------------

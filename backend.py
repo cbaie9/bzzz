@@ -7,16 +7,38 @@ import lib_graphisme
 
 # setup des classe système 
 class abeille:
-    def __init__(self, x:int, y:int, equipe:int, nectar:int, classe:str, etat:bool, id:int ,x_old :int, y_old : int):
+    def __init__(self, x:int, y:int, equipe:int, nectar:int, classe:str, etat:bool,x_old :int, y_old : int):
         self.x :int = x # Postion x du l'abeille
         self.y :int = y # Postion y de d'abeille
         self.equipe :int = equipe # Numero de l'équipe de l'abeille (Entre 1 et 4 compris)
         self.nectar :int = nectar # Nombre de nectar que porte l'abeille actuelle 
         self.classe :str = classe # Classe de l'abeille (Esclaireuse etc)
         self.etat :bool = etat # True = Vivant | False = KO
-        self.id :int = id # id de l'abeille UNIQUE 
+        self.id :int = config.id_actuelle # id de l'abeille UNIQUE 
+        config.id_actuelle += 1
         self.x_old :int = x_old
         self.y_old :int = y_old
+        # calcul de la force/nectar_max en fonction de la classe
+        force :int 
+        nectar_max :int
+        if classe == "bourdon":
+            force = 5
+            nectar_max = 1
+        elif classe == "eclaireuse":
+            force = 1
+            nectar_max = 3
+        elif classe == "ouvrière":
+            force = 1
+            nectar_max = 12
+        else :
+            force = 1
+            nectar_max = 1
+        self.force = force
+        self.nectar_max = nectar_max
+class joueur:
+    def __init__(self, list_abeillle:list[abeille]) -> None:
+        self.list_abeille = list_abeillle # liste d'abeille des joueurs
+        
 
 
 def creation_matrice_perso() -> list[list[int]]:
@@ -114,7 +136,7 @@ def affichage_matrice(L : list[list[int]]) :
             # print(i,j)
            # L_coordonnées.append((i,j)) 
 
-def case_valide(x:int,y:int,equipe:int,class_ab :str,y_old:int,x_old:int)-> bool:
+def case_valide(abeille:abeille)-> bool:
     """
     Docstring for case_valide
 
@@ -135,17 +157,17 @@ def case_valide(x:int,y:int,equipe:int,class_ab :str,y_old:int,x_old:int)-> bool
     :return: Renvoie si la case est valide
     :rtype: bool
     """
-    if  x > 15: # empêche les déplacement dans la partie stat de l'écran
+    if  abeille.x > 15: # empêche les déplacement dans la partie stat de l'écran
         return False
-    if map[x][y] == 0 or (map[x][y] == equipe or (10 <= map[x][y] <= 100 )):
+    if map[abeille.x][abeille.y] == 0 or (map[abeille.x][abeille.y] == abeille.equipe or (10 <= map[abeille.x][abeille.y] <= (10 + config.max_nectar) )):
         output = False
-        if class_ab == 'ouvrière' or class_ab == 'bourdon':
-            if ((x_old+1 == x or x_old == x or x_old-1 == x) and y == y_old) or (x_old == x and (y == y_old or y == y_old+1 or y == y_old-1)):
+        if abeille.classe == 'ouvrière' or abeille.classe == 'bourdon':
+            if ((abeille.x_old+1 == abeille.x or abeille.x_old == abeille.x or abeille.x_old-1 == abeille.x) and abeille.y == abeille.y_old) or (abeille.x_old == abeille.x and (abeille.y == abeille.y_old or abeille.y == abeille.y_old+1 or abeille.y == abeille.y_old-1)):
                 output = True
-        elif class_ab == 'eclaireuse':
-            if ((x_old+1 == x) or (x_old == x) or (x_old-1 == x)) and ((y == y_old) or (y == y_old+1) or (y == y_old-1)):
+        elif abeille.classe == 'eclaireuse':
+            if ((abeille.x_old+1 == abeille.x) or (abeille.x_old == abeille.x) or (abeille.x_old-1 == abeille.x)) and ((abeille.y == abeille.y_old) or (abeille.y == abeille.y_old+1) or (abeille.y == abeille.y_old-1)):
                 output = True
-        elif class_ab == 'debug':
+        elif abeille.classe == 'debug':
             output = True
     else :
         output = False
@@ -232,9 +254,46 @@ def get_list_deplacement(x :int, y:int) -> list[tuple[int,int]]:
         list_deplace.append((x+1,y))
         if y < config.nb_carre:
             list_deplace.append((x+1,y+1))
-    print(list_deplace)
+    #print(list_deplace)
     return list_deplace
+def est_Butinable(x:int,y:int)-> bool:
+    """
+    Docstring for est_Butinable
+
+    Renvoie un booléan si la position est une fleur qui est butinable
     
+    :param x: Position x que l'on veut verifié
+    :type x: int
+    :param y: Position y que l'on veut verifié
+    :type y: int
+    :return: True or False
+    :rtype: bool
+    """
+    output = False
+    if x < 0 or y < 0 or y > config.nb_carre or x > config.nb_carre: # sécurité anti oob
+        return False
+    elif 10 < map[x][y] <= config.max_nectar: 
+        output = True   
+    return output
+def Butinage(abeille:abeille,x:int,y:int):
+    """
+    Docstring for Butinage
+    Butine la fleur à la postion et ajoute le nectar a l'abeille
+    
+    :param abeille: abeille qui butine 
+    :type abeille: abeille
+    :param x: Position x de l'abeille 
+    :type x: int
+    :param y: Position y de l'abeille
+    :type y: int
+    """
+    if est_Butinable(x,y) and (not abeille.nectar>=abeille.nectar_max): # verification coté server + coté abeille
+        if abeille.nectar+config.nectar_par_butinage <= abeille.nectar_max and (map[x][y]-config.nectar_par_butinage >= 10):
+            abeille.nectar =+ config.nectar_par_butinage # transfère "normal"
+            map[x][y] -= config.nectar_par_butinage
+        else: # si l'un des coté ne peut plus faire de transfère par config.nectar_par_butinage alors on le fait manuellement pas 1
+            abeille.nectar += 1
+            map[x][y] -= 1
 
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 

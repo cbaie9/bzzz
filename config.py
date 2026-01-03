@@ -33,8 +33,9 @@ map_flower_color :str = "DeepPink2"
 map_player_color :str = "navy" # n'est plus utilisé actuellement -> /image/abeille_menu.png
 map_color_flower :str = "cyan"
 # ---------------------------
-# Gestion des Abeilles
+# Gestion des Abeilles et joueur
 id_actuelle :int = 0
+id_actuelle_joueur :int = 0
 # voir backend pour les joueur
 # ----------------------------
 # Gestion des fleurs

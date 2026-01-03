@@ -7,17 +7,17 @@ import lib_graphisme
 
 # setup des classe système 
 class abeille:
-    def __init__(self, x:int, y:int, equipe:int, nectar:int, classe:str, etat:bool,x_old :int, y_old : int):
+    def __init__(self, x:int, y:int, equipe:int, nectar:int, classe:str):
         self.x :int = x # Postion x du l'abeille
         self.y :int = y # Postion y de d'abeille
         self.equipe :int = equipe # Numero de l'équipe de l'abeille (Entre 1 et 4 compris)
         self.nectar :int = nectar # Nombre de nectar que porte l'abeille actuelle 
         self.classe :str = classe # Classe de l'abeille (Esclaireuse etc)
-        self.etat :bool = etat # True = Vivant | False = KO
+        self.etat :bool = True # True = Vivant | False = KO
         self.id :int = config.id_actuelle # id de l'abeille UNIQUE 
         config.id_actuelle += 1
-        self.x_old :int = x_old
-        self.y_old :int = y_old
+        self.x_old :int = x
+        self.y_old :int = y
         # calcul de la force/nectar_max en fonction de la classe
         force :int 
         nectar_max :int
@@ -36,8 +36,11 @@ class abeille:
         self.force = force
         self.nectar_max = nectar_max
 class joueur:
-    def __init__(self, list_abeillle:list[abeille]) -> None:
-        self.list_abeille = list_abeillle # liste d'abeille des joueurs
+    def __init__(self, list_abeille:list[abeille]) -> None:
+        self.list_abeille = list_abeille # liste d'abeille des joueurs
+        self.id = config.id_actuelle_joueur
+        config.id_actuelle_joueur += 1
+        self.nectar = 0
         
 
 
@@ -291,10 +294,67 @@ def Butinage(abeille:abeille,x:int,y:int):
         if abeille.nectar+config.nectar_par_butinage <= abeille.nectar_max and (map[x][y]-config.nectar_par_butinage >= 10):
             abeille.nectar =+ config.nectar_par_butinage # transfère "normal"
             map[x][y] -= config.nectar_par_butinage
+            print('btnage-normal')
         else: # si l'un des coté ne peut plus faire de transfère par config.nectar_par_butinage alors on le fait manuellement pas 1
             abeille.nectar += 1
             map[x][y] -= 1
+def get_list_abeille(joueur :joueur)-> list[abeille] | list[int]:
+    if 1<=joueur.id<=4:
+        output = joueur.list_abeille
+    else:
+        assert(f"Erreur : Le nombre de joueur doit être entre 1 et 4 compris - actuellemement {joueur.id}")
+        output = [-1]
+    return output
 
+def get_spawn_coor(j:int,mode:int = 3)-> type[tuple[int,int]] | int:
+    """
+    Docstring for get_spawn_coor
+    
+    :param j: Numéro du joueur compris entre 1 et 4
+    :type j: int
+    :param mode: Mode de la fonction :
+
+    Mode 1: Renvoie la coordonnées x du spawn du joueur choisi
+    Mode 2: Renvoie la coordonnées y du spawn du joueur choisi
+    :type mode: int
+    :return: Coordonnées 
+    :rtype: type[tuple[int, int]] | int
+    """
+    if 1<=j<=4:
+        if j == 1:
+            if mode == 3:
+                output = tuple[int(0),int(0)]
+            else: 
+                output = 0
+        elif j == 2:
+            if mode == 1:
+                output = int(config.nb_carre_x-1)
+            elif mode == 2:
+                output = 0
+            else:
+                output = tuple[int(config.nb_carre_x-1),int(0)]
+        elif j == 3:
+            if mode == 1:
+                output = 0
+            elif mode == 2:
+                output = int(config.nb_carre_y-1)
+            else:
+                output = tuple[int(0),int(config.nb_carre_y-1)]
+        else:
+            if mode == 1:
+                output = config.nb_carre_x-1
+            elif mode == 2:
+                output = config.nb_carre_y-1
+            else:
+                output = tuple[int(config.nb_carre_x-1),int(config.nb_carre_y-1)]
+    else:
+        assert(f"Erreur : Le nombre de joueur doit être entre 1 et 4 compris - actuellemement {j}")
+        if mode == 3:
+            output = tuple[config.nb_carre_x//2,config.nb_carre_y//2]
+        else:
+            output = config.nb_carre//2
+    return output
+        
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 
 map = creation_matrice_map()

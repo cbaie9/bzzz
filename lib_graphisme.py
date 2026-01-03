@@ -25,41 +25,50 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
         
 def start():
     # ----- Initailisation de la fenêtre + abeille
-    abeille1 = backend.abeille(0,0,1,0,'eclaireuse',True,0,0)
-    J1 = backend.joueur([abeille1])
+    
+    # pour les warning, la fonction appelle ne renvoie en que des int dans les mode 1 et 2 -> voir definition fonction 
+    J1 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(1,1)),int(backend.get_spawn_coor(1,2)),1,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
+    J2 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(2,1)),int(backend.get_spawn_coor(2,2)),2,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
+    J3 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(3,1)),int(backend.get_spawn_coor(3,2)),3,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
+    J4 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(4,1)),int(backend.get_spawn_coor(4,1)),4,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
+    global Players
+    Players = [J1,J2,J3,J4]
     global g  
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     actualisation_background()
-    carre = g.afficherImage(abeille1.x*config.taille_carre_x,abeille1.y*config.taille_carre_x,'./image/abeille_menu.png')
+    carre = g.afficherImage(J1.list_abeille[0].x*config.taille_carre_x,J1.list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')
     #-------------------Boucle principale
     while config.play:
         clic = g.recupererClic()
         # previsualisation des déplacement
-        dessiner_case_deplacement(abeille1)
+        dessiner_case_deplacement(J1.list_abeille[0])
         #re affichage des abeille du au calque de déplacement
-        afficher_abeille(abeille1,carre)
+        afficher_abeille(J1.list_abeille[0],carre)
         if clic is not None:
             # calcul des collision
-            dessiner_case_deplacement(abeille1,False) # faux -> efface les cases de prévisualisation 
+            dessiner_case_deplacement(J1.list_abeille[0],False) # faux -> efface les cases de prévisualisation 
             # --------------- Determination du clic du joueur ( par cases )
             if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
-                abeille1.x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
+                J1.list_abeille[0].x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
             else:
-                abeille1.x = 15 # si le joueur essaie, le colle à la bordure
-            abeille1.y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
+                J1.list_abeille[0].x = 15 # si le joueur essaie, le colle à la bordure
+            J1.list_abeille[0].y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
             #---------
             # est-ce que la case choisi est la valide
-            if backend.case_valide(abeille1):
+            if backend.case_valide(J1.list_abeille[0]):
                 if backend.est_Butinable(J1.list_abeille[0].x,J1.list_abeille[0].y):
                     backend.Butinage(J1.list_abeille[0],J1.list_abeille[0].x,J1.list_abeille[0].y)
-                # deplacement du joueur
-                afficher_abeille(abeille1,carre)
-                dessiner_spawn()
-                abeille1.y_old = abeille1.y
-                abeille1.x_old = abeille1.x
+                else :
+                    # deplacement du joueur
+                    afficher_abeille(J1.list_abeille[0],carre)
+                    dessiner_spawn()
+                    J1.list_abeille[0].y_old = J1.list_abeille[0].y
+                    J1.list_abeille[0].x_old = J1.list_abeille[0].x
             else :
                 # si le temps ajouter ici le système de déplacement automatique / IA
                 pass
+            # verif de fin de tour
+            fin_de_tour()
     # Boucle à vide qui attend un clic
     g.attendreClic()
 
@@ -229,7 +238,22 @@ def afficher_abeille(abeille:backend.abeille,carre:tke.ObjetGraphique):
         carre = g.afficherImage(abeille.x_old*config.taille_carre_x,abeille.y_old*config.taille_carre_x,'./image/abeille_menu.png') # image de joueur normal
     else :
         carre = g.afficherImage(abeille.x_old*config.taille_carre_x,abeille.y_old*config.taille_carre_x,'./image/abeille_menu_mini.png') # image de joueur en mode mini ( prevu pour nb_carre = 8)
+def fin_de_tour():
+    """
+    Docstring for fin_de_tour
 
+    Verification de fin tour pour toutes les abeille et le retour nectar
+
+
+    """
+    # ajout du nectar au joueur si l'abeille en porte et se trouve au spawn de son équipe    
+    for x in range(len(Players)-1): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+        for y in range(len(liste_joueur_actuelle)-1): # for pour la liste d'abeille / joueur
+            if backend.map[liste_joueur_actuelle[y].x][liste_joueur_actuelle[y].y] == x+1: # regarde si la position est égale à l'équipe du joueur si elle appartient (via la matrice et les spawns)
+                if liste_joueur_actuelle[y].nectar > 0 : # si l'abeille à du nectar sur elle
+                    Players[x].nectar += liste_joueur_actuelle[y].nectar
+                    liste_joueur_actuelle[y].nectar = 0
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 

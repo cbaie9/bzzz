@@ -249,19 +249,19 @@ def fin_de_tour():
 
     
     """
-    print("------------------------")
-    backend.affichage_matrice(backend.map)
+    #print("------------------------")
+    #backend.affichage_matrice(backend.map)
     # ajout du nectar au joueur si l'abeille en porte et se trouve au spawn de son équipe    
     for x in range(len(Players)): # for pour le nombre de joueur
-        print(x)
+        #print(x)
         liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
-            print(y,backend.map[liste_joueur_actuelle[y].x][liste_joueur_actuelle[y].y])
+            #print(y,backend.map[liste_joueur_actuelle[y].x][liste_joueur_actuelle[y].y])
             if backend.map[liste_joueur_actuelle[y].x][liste_joueur_actuelle[y].y] == x+1: # regarde si la position est égale à l'équipe du joueur si elle appartient (via la matrice et les spawns)
                 if liste_joueur_actuelle[y].nectar > 0 : # si l'abeille à du nectar sur elle
                     Players[x].nectar += liste_joueur_actuelle[y].nectar
                     liste_joueur_actuelle[y].nectar = 0
-                    print(f"Fin de tour | joueur n°{x} | abeille n°{y} | nectar ab = {liste_joueur_actuelle[y].nectar}| nectar joueur {Players[x].nectar}")
+                    print(f"Fin de tour | joueur n°{x+1} | abeille n°{y} | nectar ab = {liste_joueur_actuelle[y].nectar}| nectar joueur {Players[x].nectar}")
     stat_part()
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)

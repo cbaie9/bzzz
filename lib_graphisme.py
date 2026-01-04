@@ -33,7 +33,8 @@ def start():
     J4 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(4,1)),int(backend.get_spawn_coor(4,1)),4,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
     global Players
     Players = [J1,J2,J3,J4]
-    global g  
+    global g
+    dna_ab = False  
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     actualisation_background()
     carre = g.afficherImage(J1.list_abeille[0].x*config.taille_carre_x,J1.list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')
@@ -41,10 +42,12 @@ def start():
     while config.play:
         clic = g.recupererClic()
         # previsualisation des déplacement
-        dessiner_case_deplacement(J1.list_abeille[0])
+        if dna_ab == False:
+           dessiner_case_deplacement(J1.list_abeille[0])
         #re affichage des abeille du au calque de déplacement
         afficher_abeille(J1.list_abeille[0],carre)
         if clic is not None:
+            dna_ab = False
             # calcul des collision
             dessiner_case_deplacement(J1.list_abeille[0],False) # faux -> efface les cases de prévisualisation 
             # --------------- Determination du clic du joueur ( par cases )
@@ -57,8 +60,11 @@ def start():
             # est-ce que la case choisi est la valide
             if backend.case_valide(J1.list_abeille[0]):
                 if backend.est_Butinable(J1.list_abeille[0].x,J1.list_abeille[0].y):
-                    J1.list_abeille[0].nectar += backend.Butinage(J1.list_abeille[0],J1.list_abeille[0].x,J1.list_abeille[0].y)
-                    stat_part()
+                    dna_ab = True # ne pas actusaliser la previsualisation
+                    nectar_add = backend.Butinage(J1.list_abeille[0],J1.list_abeille[0].x,J1.list_abeille[0].y)
+                    if nectar_add > 0:
+                        J1.list_abeille[0].nectar += nectar_add
+                        stat_part()
                 else :
                     # deplacement du joueur
                     afficher_abeille(J1.list_abeille[0],carre)
@@ -193,10 +199,25 @@ def menu_background():
 
 def stat_part():
     global g
+    
     g.dessinerRectangle(config.xmax_game,0,config.xmax_stat,config.ymax_game,'gray')
-    g.afficherTexte('J1',config.xmax_game+20,20,'red',20)
-    g.afficherTexte(f'{Players[0].list_abeille[0].nectar}',config.xmax_game+20,100,'red',20)
-    g.afficherTexte(f'{Players[0].nectar}',config.xmax_game+20,200,'red',20)
+    #j1
+    g.afficherTexte('J1',config.xmax_game+20,config.ymax_game//8-30,'green',20)
+    g.afficherTexte(f'Nectar ab0 {Players[0].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,config.ymax_game//8,'green',20)
+    g.afficherTexte(f'Nectar {Players[0].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,config.ymax_game//8,'green',20)
+    #j2
+    g.afficherTexte('J2',config.xmax_game+20,config.ymax_game//4-30,'purple',20)
+    g.afficherTexte(f'Nectar ab0 {Players[1].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,config.ymax_game//4,'purple',20)
+    g.afficherTexte(f'Nectar {Players[1].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,config.ymax_game//4,'purple',20)
+    #j3
+    g.afficherTexte('J3',config.xmax_game+20,((config.ymax_game//8)*3)-30,'blue',20)
+    g.afficherTexte(f'Nectar ab0 {Players[2].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*3,'blue',20)
+    g.afficherTexte(f'Nectar {Players[2].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,(config.ymax_game//8)*3,'blue',20)
+    #j4
+    g.afficherTexte('J4',config.xmax_game+20,((config.ymax_game//8)*4)-30,'red',20)
+    g.afficherTexte(f'Nectar ab0 {Players[3].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*4,'red',20)
+    g.afficherTexte(f'Nectar {Players[3].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,(config.ymax_game//8)*4,'red',20)
+
 
 def dessiner_case_deplacement(abeille:backend.abeille, ecrire:bool = True):
     """

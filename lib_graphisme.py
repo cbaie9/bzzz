@@ -57,7 +57,8 @@ def start():
             # est-ce que la case choisi est la valide
             if backend.case_valide(J1.list_abeille[0]):
                 if backend.est_Butinable(J1.list_abeille[0].x,J1.list_abeille[0].y):
-                    backend.Butinage(J1.list_abeille[0],J1.list_abeille[0].x,J1.list_abeille[0].y)
+                    J1.list_abeille[0].nectar += backend.Butinage(J1.list_abeille[0],J1.list_abeille[0].x,J1.list_abeille[0].y)
+                    stat_part()
                 else :
                     # deplacement du joueur
                     afficher_abeille(J1.list_abeille[0],carre)
@@ -194,6 +195,8 @@ def stat_part():
     global g
     g.dessinerRectangle(config.xmax_game,0,config.xmax_stat,config.ymax_game,'gray')
     g.afficherTexte('J1',config.xmax_game+20,20,'red',20)
+    g.afficherTexte(f'{Players[0].list_abeille[0].nectar}',config.xmax_game+20,100,'red',20)
+    g.afficherTexte(f'{Players[0].nectar}',config.xmax_game+20,200,'red',20)
 
 def dessiner_case_deplacement(abeille:backend.abeille, ecrire:bool = True):
     """
@@ -244,16 +247,22 @@ def fin_de_tour():
 
     Verification de fin tour pour toutes les abeille et le retour nectar
 
-
+    
     """
+    print("------------------------")
+    backend.affichage_matrice(backend.map)
     # ajout du nectar au joueur si l'abeille en porte et se trouve au spawn de son équipe    
-    for x in range(len(Players)-1): # for pour le nombre de joueur
+    for x in range(len(Players)): # for pour le nombre de joueur
+        print(x)
         liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
-        for y in range(len(liste_joueur_actuelle)-1): # for pour la liste d'abeille / joueur
+        for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            print(y,backend.map[liste_joueur_actuelle[y].x][liste_joueur_actuelle[y].y])
             if backend.map[liste_joueur_actuelle[y].x][liste_joueur_actuelle[y].y] == x+1: # regarde si la position est égale à l'équipe du joueur si elle appartient (via la matrice et les spawns)
                 if liste_joueur_actuelle[y].nectar > 0 : # si l'abeille à du nectar sur elle
                     Players[x].nectar += liste_joueur_actuelle[y].nectar
                     liste_joueur_actuelle[y].nectar = 0
+                    print(f"Fin de tour | joueur n°{x} | abeille n°{y} | nectar ab = {liste_joueur_actuelle[y].nectar}| nectar joueur {Players[x].nectar}")
+    stat_part()
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 

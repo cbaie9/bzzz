@@ -278,7 +278,7 @@ def est_Butinable(x:int,y:int)-> bool:
     elif 10 < map[x][y] <= config.max_nectar: 
         output = True   
     return output
-def Butinage(abeille:abeille,x:int,y:int):
+def Butinage(abeille:abeille,x:int,y:int)-> int:
     """
     Docstring for Butinage
     Butine la fleur à la postion et ajoute le nectar a l'abeille
@@ -289,15 +289,22 @@ def Butinage(abeille:abeille,x:int,y:int):
     :type x: int
     :param y: Position y de l'abeille
     :type y: int
+
+    MAJ : Retourne le nectar que l'on doit donnée a abeille avec un appel de type
+    abeille.nectar += butinage(abeille,abeille.x,abeille.y)
+    Note pour raison pratique pensez a actualiser les stat après l'appel ( non obligatoire mais instinctif pour debug et le joueur)
     """
-    if est_Butinable(x,y) and (not abeille.nectar>=abeille.nectar_max): # verification coté server + coté abeille
+    if est_Butinable(x,y) and (0<=abeille.nectar<abeille.nectar_max): # verification coté server + coté abeille
         if abeille.nectar+config.nectar_par_butinage <= abeille.nectar_max and (map[x][y]-config.nectar_par_butinage >= 10):
             abeille.nectar =+ config.nectar_par_butinage # transfère "normal"
             map[x][y] -= config.nectar_par_butinage
             print('btnage-normal')
+            return config.nectar_par_butinage
         else: # si l'un des coté ne peut plus faire de transfère par config.nectar_par_butinage alors on le fait manuellement pas 1
-            abeille.nectar += 1
             map[x][y] -= 1
+            return 1
+    else :
+        return 0
 def get_list_abeille(joueur :joueur)-> list[abeille] | list[int]:
     if 1<=joueur.id<=4:
         output = joueur.list_abeille

@@ -36,6 +36,7 @@ map_color_flower :str = "cyan"
 # Gestion des Abeilles et joueur
 id_actuelle :int = 0
 id_actuelle_joueur :int = 0
+prix_abeille :int =3
 # voir backend pour les joueur
 # ----------------------------
 # Gestion des fleurs
@@ -51,6 +52,11 @@ taille_image_spawn :int = 50
 taille_mini :int = 300
 taille_texture_abeille :int = 50 # taille de la texture abeille_menu.png
 # -----------------------
+# Partie Statistique 
+size_btn_quit = int(xmax_game*0.05)
+margin_cross :int = int(size_btn_quit*0.20)
+sub_margin_btn :int = 25
+# --------------------
 # Verification des règles de configuration
 if max_nectar % 3 != 0:
     assert(f"Problème de configuration : Le nectar max n'est pas Disivible par 3 | Valeur Acteuelle : {max_nectar}")

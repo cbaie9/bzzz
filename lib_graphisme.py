@@ -2,6 +2,13 @@ import tkiteasy as tke # type: ignore
 import config
 import backend
 
+    # pour les warning, la fonction appelle ne renvoie en que des int dans les mode 1 et 2 -> voir definition fonction 
+J1 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(1,1)),int(backend.get_spawn_coor(1,2)),1,'debug')]) # pyright: ignore[reportArgumentType]
+J2 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(2,1)),int(backend.get_spawn_coor(2,2)),2,'eclaireuse')]) # pyright: ignore[reportArgumentType]
+J3 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(3,1)),int(backend.get_spawn_coor(3,2)),3,'eclaireuse')]) # pyright: ignore[reportArgumentType]
+J4 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(4,1)),int(backend.get_spawn_coor(4,1)),4,'eclaireuse')]) # pyright: ignore[reportArgumentType]
+global Players
+Players = [J1,J2,J3,J4]
 
 def dessiner_background(): #quadriage selon la couleur des spawn via la matrice map
     """
@@ -25,60 +32,70 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
         
 def start():
     # ----- Initailisation de la fenêtre + abeille
-    
-    # pour les warning, la fonction appelle ne renvoie en que des int dans les mode 1 et 2 -> voir definition fonction 
-    J1 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(1,1)),int(backend.get_spawn_coor(1,2)),1,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
-    J2 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(2,1)),int(backend.get_spawn_coor(2,2)),2,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
-    J3 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(3,1)),int(backend.get_spawn_coor(3,2)),3,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
-    J4 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(4,1)),int(backend.get_spawn_coor(4,1)),4,0,'eclaireuse')]) # pyright: ignore[reportArgumentType]
-    global Players
-    Players = [J1,J2,J3,J4]
     global g
     dna_ab = False  
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
-    actualisation_background()
-    carre = g.afficherImage(J1.list_abeille[0].x*config.taille_carre_x,J1.list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')
+    actualisation_background_map()
+    carre = g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')
     #-------------------Boucle principale
     while config.play:
-        clic = g.recupererClic()
-        # previsualisation des déplacement
-        if dna_ab == False:
-           dessiner_case_deplacement(J1.list_abeille[0])
-        #re affichage des abeille du au calque de déplacement
-        afficher_abeille(J1.list_abeille[0],carre)
-        if clic is not None:
-            dna_ab = False
-            # calcul des collision
-            dessiner_case_deplacement(J1.list_abeille[0],False) # faux -> efface les cases de prévisualisation 
-            # --------------- Determination du clic du joueur ( par cases )
-            if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
-                J1.list_abeille[0].x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
-            else:
-                J1.list_abeille[0].x = 15 # si le joueur essaie, le colle à la bordure
-            J1.list_abeille[0].y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
-            #---------
-            # est-ce que la case choisi est la valide
-            if backend.case_valide(J1.list_abeille[0]):
-                if backend.est_Butinable(J1.list_abeille[0].x,J1.list_abeille[0].y):
-                    dna_ab = True # ne pas actusaliser la previsualisation
-                    nectar_add = backend.Butinage(J1.list_abeille[0],J1.list_abeille[0].x,J1.list_abeille[0].y)
-                    if nectar_add > 0:
-                        J1.list_abeille[0].nectar += nectar_add
-                        stat_part()
+        for joueur in Players:
+            stat_part(joueur)
+            clic = g.attendreClic()
+            # previsualisation des déplacement
+            if dna_ab == False:
+                dessiner_case_deplacement(joueur.list_abeille[0])
+            #re affichage des abeille du au calque de déplacement
+            afficher_abeille(joueur.list_abeille[0],carre)
+            if clic is not None:
+                dna_ab = False
+                # calcul des collision
+                dessiner_case_deplacement(joueur.list_abeille[0]) # faux -> efface les cases de prévisualisation 
+                # --------------- Determination du clic du joueur ( par cases )
+                if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
+                    joueur.list_abeille[0].x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
+                else:
+                    joueur.list_abeille[0].x = 15 # si le joueur essaie, le colle à la bordure
+                joueur.list_abeille[0].y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
+                #---------
+                # est-ce que la case choisi est la valide
+                #print(joueur.list_abeille[0].x,joueur.list_abeille[0].y)
+                if backend.case_valide(joueur.list_abeille[0]):
+                    if backend.est_Butinable(joueur.list_abeille[0].x,joueur.list_abeille[0].y):
+                        dna_ab = True # ne pas actusaliser la previsualisation
+                        nectar_add = backend.Butinage(joueur.list_abeille[0],joueur.list_abeille[0].x,joueur.list_abeille[0].y)
+                        if nectar_add > 0:
+                            joueur.list_abeille[0].nectar += nectar_add
+                            stat_part(joueur)
+                    else :
+                        # deplacement du joueur
+                        afficher_abeille(J1.list_abeille[0],carre)
+                        dessiner_spawn()
+                        joueur.list_abeille[0].y_old = joueur.list_abeille[0].y
+                        joueur.list_abeille[0].x_old = joueur.list_abeille[0].x
                 else :
-                    # deplacement du joueur
-                    afficher_abeille(J1.list_abeille[0],carre)
-                    dessiner_spawn()
-                    J1.list_abeille[0].y_old = J1.list_abeille[0].y
-                    J1.list_abeille[0].x_old = J1.list_abeille[0].x
-            else :
-                # si le temps ajouter ici le système de déplacement automatique / IA
-                pass
-            # verif de fin de tour
-            fin_de_tour()
-    # Boucle à vide qui attend un clic
-    g.attendreClic()
-
+                    # partie boutons stat :
+                    # bouton quitter
+                    if config.xmax-config.size_btn_quit <= clic.x <= config.xmax and 0 <= clic.y <= config.size_btn_quit:
+                        print("Bye-Bye")
+                        config.play = False
+                    # boutons abeille : ouvrière
+                    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*5 <= clic.y <= ((config.ymax_game//8)*5)+config.size_btn_quit:
+                        # ajouter créer abeille ici (ouvrière)
+                        pass
+                    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*6 <= clic.y <= ((config.ymax_game//8)*6)+config.size_btn_quit:
+                        # ajouter créer abeille ici ( bourdon )
+                        pass
+                    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*7 <= clic.y <= ((config.ymax_game//8)*7)+config.size_btn_quit:
+                        # ajout créer abeille ici ( eclaireuse )
+                        pass
+                    # si le temps ajouter ici le système de déplacement automatique / IA
+                    # --- ICI --- #
+                    # ----------- #
+                if config.play == False:
+                    break
+                # verif de fin de tour
+                fin_de_tour(joueur)
     # Fermeture fenêtre
     g.fermerFenetre()
 def get_couleur_map(x:int,y:int)->str:
@@ -93,7 +110,7 @@ def get_couleur_map(x:int,y:int)->str:
     :rtype: str
     """
     # determine si la case demandé est dans la map
-    if not 0 <= x <= config.nb_carre_x and 0 <= y <= config.nb_carre_y:
+    if not (0 <= x < config.nb_carre_x and 0 <= y < config.nb_carre_y):
         print(f"erreur de oob x ={x}, y : {y}")
         print(f"{config.taille_carre_x},   {config.taille_carre_y}")
         return config.map_error_color
@@ -197,26 +214,34 @@ def menu_background():
     g.dessinerRectangle((config.taille_mini/2)-(config.taille_mini/4),(config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16),config.taille_mini/2,config.taille_mini/8,'black')
     g.afficherTexte("Jouer",config.taille_mini/2,config.taille_mini-config.taille_mini/8,'white')
 
-def stat_part():
+def stat_part(joueur:backend.joueur):
     global g
     
     g.dessinerRectangle(config.xmax_game,0,config.xmax_stat,config.ymax_game,'gray')
-    #j1
-    g.afficherTexte('J1',config.xmax_game+20,config.ymax_game//8-30,'green',20)
-    g.afficherTexte(f'Nectar ab0 {Players[0].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,config.ymax_game//8,'green',20)
-    g.afficherTexte(f'Nectar {Players[0].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,config.ymax_game//8,'green',20)
-    #j2
-    g.afficherTexte('J2',config.xmax_game+20,config.ymax_game//4-30,'purple',20)
-    g.afficherTexte(f'Nectar ab0 {Players[1].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,config.ymax_game//4,'purple',20)
-    g.afficherTexte(f'Nectar {Players[1].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,config.ymax_game//4,'purple',20)
-    #j3
-    g.afficherTexte('J3',config.xmax_game+20,((config.ymax_game//8)*3)-30,'blue',20)
-    g.afficherTexte(f'Nectar ab0 {Players[2].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*3,'blue',20)
-    g.afficherTexte(f'Nectar {Players[2].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,(config.ymax_game//8)*3,'blue',20)
-    #j4
-    g.afficherTexte('J4',config.xmax_game+20,((config.ymax_game//8)*4)-30,'red',20)
-    g.afficherTexte(f'Nectar ab0 {Players[3].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*4,'red',20)
-    g.afficherTexte(f'Nectar {Players[3].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,(config.ymax_game//8)*4,'red',20)
+    for x in range(0,4):
+        color = ['green','purple','blue','red']
+        y = x+1
+        #j3
+        if joueur.id == x:
+            #print(x,y)
+            g.afficherTexte(f'J{y}',config.xmax_game+20,((config.ymax_game//8)*y)-30,color[x],20)
+            g.afficherTexte(f'Nectar ab0 {Players[x].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*y,color[x],20)
+            g.afficherTexte(f'Nectar {Players[x].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,(config.ymax_game//8)*y,color[x],20)
+    #btn exit
+    g.dessinerRectangle((config.xmax_game+config.xmax_stat)-config.size_btn_quit,0,config.size_btn_quit,config.size_btn_quit,'red')
+    g.dessinerLigne(((config.xmax)-config.size_btn_quit)+config.margin_cross,config.margin_cross,config.xmax-config.margin_cross,config.size_btn_quit-config.margin_cross,'white smoke')
+    g.dessinerLigne(((config.xmax)-config.size_btn_quit)+config.margin_cross,config.size_btn_quit-config.margin_cross,config.xmax-config.margin_cross,config.margin_cross,'white smoke')
+    # btn créer abeille :
+    g.dessinerLigne(config.xmax_game,(config.ymax_game//8)*5-config.sub_margin_btn-20,config.xmax,(config.ymax_game//8)*5-config.sub_margin_btn-20,'black')
+    g.afficherTexte(f'Créer des abeilles | coût : {config.prix_abeille}',config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*5-config.sub_margin_btn,'black',20)
+    for x in range(5,8):
+        Nom = ['Ouvrière','Bourdon','Eclaireuse']
+        if joueur.nectar >= 3 and backend.ya_quelqun(backend.get_spawn_coor(joueur.id+1,1),backend.get_spawn_coor(joueur.id+1,2)): # pyright: ignore[reportArgumentType] -> voir definition fonction mode 1 et 2 ne renvoie que des int et non des tuple
+            color_creer :str = 'dark green'
+        else:
+            color_creer :str = 'red'
+        g.afficherTexte(f'{Nom[x-5]}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*x+config.sub_margin_btn,'orange',20)
+        g.dessinerRectangle(config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*x,config.size_btn_quit*2,config.size_btn_quit,color_creer)
 
 
 def dessiner_case_deplacement(abeille:backend.abeille, ecrire:bool = True):
@@ -247,7 +272,7 @@ def dessiner_case_deplacement(abeille:backend.abeille, ecrire:bool = True):
                 else :
                     g.dessinerRectangle(x_list*config.taille_carre_x,y_list*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,get_couleur_map(x_list,y_list))
                 #debug print(f"feur xl :{x_list} ||| yl : {y_list}"))
-def actualisation_background():
+def actualisation_background_map():
     """
     Docstring for actualisation_background
 
@@ -255,14 +280,13 @@ def actualisation_background():
     """
     dessiner_background()
     dessiner_spawn()
-    stat_part()
 def afficher_abeille(abeille:backend.abeille,carre:tke.ObjetGraphique):
     g.supprimer(carre)
     if config.nb_carre >= 16:
         carre = g.afficherImage(abeille.x_old*config.taille_carre_x,abeille.y_old*config.taille_carre_x,'./image/abeille_menu.png') # image de joueur normal
     else :
         carre = g.afficherImage(abeille.x_old*config.taille_carre_x,abeille.y_old*config.taille_carre_x,'./image/abeille_menu_mini.png') # image de joueur en mode mini ( prevu pour nb_carre = 8)
-def fin_de_tour():
+def fin_de_tour(joueur:backend.joueur):
     """
     Docstring for fin_de_tour
 
@@ -283,7 +307,7 @@ def fin_de_tour():
                     Players[x].nectar += liste_joueur_actuelle[y].nectar
                     liste_joueur_actuelle[y].nectar = 0
                     print(f"Fin de tour | joueur n°{x+1} | abeille n°{y} | nectar ab = {liste_joueur_actuelle[y].nectar}| nectar joueur {Players[x].nectar}")
-    stat_part()
+    stat_part(joueur)
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 

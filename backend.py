@@ -2,7 +2,6 @@
 import config 
 from random import choice
 import random
-import lib_graphisme
 
 
 # setup des classe système 
@@ -160,6 +159,8 @@ def case_valide(abeille:abeille)-> bool:
     :return: Renvoie si la case est valide
     :rtype: bool
     """
+    output2 = False
+    compteur = 0
     if  abeille.x > 15: # empêche les déplacement dans la partie stat de l'écran
         return False
     if map[abeille.x][abeille.y] == 0 or (map[abeille.x][abeille.y] == abeille.equipe or (10 <= map[abeille.x][abeille.y] <= (10 + config.max_nectar) )):
@@ -174,7 +175,16 @@ def case_valide(abeille:abeille)-> bool:
             output = True
     else :
         output = False
-    return output
+    if output:
+        for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+            #print(x)
+            liste_joueur_actuelle = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+            for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+                if liste_joueur_actuelle[y].x == abeille.x and liste_joueur_actuelle[y].y == abeille.y :
+                    compteur += 1
+        if compteur == 1:
+            output2 = True
+    return output and output2
 def emplacement_fleurs(L_coord_case : list[tuple[int,int]]) : 
     """
     Retourne les coordonnées aléatoires pour le placement des fleurs
@@ -367,5 +377,6 @@ def get_spawn_coor(j:int,mode:int = 3)-> type[tuple[int,int]] | int:
 map = creation_matrice_map()
 affichage_matrice(map)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 
+    import lib_graphisme
     lib_graphisme.menu()
 

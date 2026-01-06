@@ -12,7 +12,7 @@ class abeille:
         self.x :int = x # Postion x du l'abeille
         self.y :int = y # Postion y de d'abeille
         self.equipe :int = equipe # Numero de l'équipe de l'abeille (Entre 1 et 4 compris)
-        self.nectar :int = 0 # Nombre de nectar que porte l'abeille actuelle 
+        self.nectar :int = 3 # Nombre de nectar que porte l'abeille actuelle 
         self.classe :str = classe # Classe de l'abeille (Esclaireuse etc)
         self.etat :bool = True # True = Vivant | False = KO
         if equipe == 1:
@@ -176,7 +176,7 @@ def case_valide(abeille:abeille)-> bool:
     """
     output2 = False
     compteur = 0
-    print(f"verif {abeille.equipe}, {abeille.x} | {abeille.y} {map[abeille.x][abeille.y]}")
+    #print(f"verif {abeille.equipe}, {abeille.x} | {abeille.y} {map[abeille.x][abeille.y]}")
     if  abeille.x > 15: # empêche les déplacement dans la partie stat de l'écran
         return False
     if map[abeille.x][abeille.y] == 0 or (map[abeille.x][abeille.y] == abeille.equipe or (10 <= map[abeille.x][abeille.y] <= (10 + config.max_nectar) )):
@@ -201,9 +201,7 @@ def case_valide(abeille:abeille)-> bool:
                     compteur += 1
         if compteur == 1 or compteur == 0:
             output2 = True
-    print(f"output VERIF 1{output}")
-    print(f"output VERIF 2{output2}")
-    return output
+    return output and output2
 def emplacement_fleurs(L_coord_case : list[tuple[int,int]]) : 
     """
     Retourne les coordonnées aléatoires pour le placement des fleurs

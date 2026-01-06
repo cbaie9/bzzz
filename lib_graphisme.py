@@ -302,7 +302,7 @@ def afficher_abeille(abeille:backend.abeille,carre:tke.ObjetGraphique):
 
     g.supprimer(carre)
     if config.nb_carre >= 16:
-        carre = g.afficherImage(abeille.x*config.taille_carre_x,abeille.y*config.taille_carre_x,'./image/abeille_menu.png') # image de joueur normal
+        carre = g.afficherImage(abeille.x*config.taille_carre_x,abeille.y*config.taille_carre_x,get_image_sprite(abeille.equipe,abeille.classe)) # image de joueur normal
     else :
         carre = g.afficherImage(abeille.x*config.taille_carre_x,abeille.y*config.taille_carre_x,'./image/abeille_menu_mini.png') # image de joueur en mode mini ( prevu pour nb_carre = 8)
     return carre
@@ -330,13 +330,41 @@ def fin_de_tour(joueur:backend.joueur):
     stat_part(joueur)
 def afficher_toutes_les_abeilles(liste_img:list[list[tke.ObjetGraphique]]):
     for x in range(len(Players)): # for pour le nombre de joueur
-        #print(x)
         liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
-            pass
-    for xl in range(len(liste_img)):
-        for yl in range(len(liste_img[xl])):
-            liste_img[xl][yl]
+            g.afficherImage(liste_joueur_actuelle[y].x*config.taille_carre_x,liste_joueur_actuelle[y].y*config.taille_carre_y,get_image_sprite(liste_joueur_actuelle[y].equipe,liste_joueur_actuelle[y].classe))
+
+def get_image_sprite(equipe:int,class_ab:str)->str:
+    output = './image/abeille_menu.png'
+    if equipe == 1:
+        if class_ab == "ouvrière":
+            output = "./image/abeilles/ouvrière/vert.png"
+        elif class_ab == "eclaireuse":
+            output = "./image/abeilles/eclaireuse/ec_vert.png"
+        elif class_ab == "bourdon":
+            output = "./image/abeilles/bourdon/bd_vert.png"
+    elif equipe == 2:
+        if class_ab == "ouvrière":
+            output = "./image/abeilles/ouvrière/bleu.png"
+        elif class_ab == "eclaireuse":
+            output = "./image/abeilles/eclaireuse/ec_bleu.png"
+        elif class_ab == "bourdon":
+            output = "./image/abeilles/bourdon/bd_bleu.png"
+    elif equipe == 3:
+        if class_ab == "ouvrière":
+            output = "./image/abeilles/ouvrière/violet.png"
+        elif class_ab == "eclaireuse":
+            output = "./image/abeilles/eclaireuse/ec_violet.png"
+        elif class_ab == "bourdon":
+            output = "./image/abeilles/bourdon/bd_violet.png"
+    elif equipe == 4:
+        if class_ab == "ouvrière":
+            output = "./image/abeilles/ouvrière/rouge.png"
+        elif class_ab == "eclaireuse":
+            output = "./image/abeilles/eclaireuse/ec_rouge.png"
+        elif class_ab == "bourdon":
+            output = "./image/abeilles/bourdon/bd_rouge.png"
+    return output
 
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)

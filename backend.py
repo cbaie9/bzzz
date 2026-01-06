@@ -1,22 +1,35 @@
 #import tkiteasy as tke
+#import lib_graphisme
 import config 
 from random import choice
 import random
 
 
+
 # setup des classe système 
 class abeille:
-    def __init__(self, x:int, y:int, equipe:int, nectar:int, classe:str):
+    def __init__(self, x:int, y:int, equipe:int, classe:str):
         self.x :int = x # Postion x du l'abeille
         self.y :int = y # Postion y de d'abeille
         self.equipe :int = equipe # Numero de l'équipe de l'abeille (Entre 1 et 4 compris)
-        self.nectar :int = nectar # Nombre de nectar que porte l'abeille actuelle 
+        self.nectar :int = 0 # Nombre de nectar que porte l'abeille actuelle 
         self.classe :str = classe # Classe de l'abeille (Esclaireuse etc)
         self.etat :bool = True # True = Vivant | False = KO
-        self.id :int = config.id_actuelle # id de l'abeille UNIQUE 
-        config.id_actuelle += 1
+        if equipe == 1:
+            self.id :int = config.id_actuelle_J1 # id de l'abeille UNIQUE 
+            config.id_actuelle_J1 += 1
+        elif equipe == 2:
+            self.id :int = config.id_actuelle_J2
+            config.id_actuelle_J2 += 1
+        elif equipe == 3:
+            self.id :int =config.id_actuelle_J3
+            config.id_actuelle_J3 += 1
+        else:
+            self.id :int = config.id_actuelle_J4
+            config.id_actuelle_J4 += 1
         self.x_old :int = x
         self.y_old :int = y
+        #self.img :tke.ObjetGraphique= lib_graphisme.g.afficherImage(self.x,self.y,'./image/abeille_menu.png')
         # calcul de la force/nectar_max en fonction de la classe
         force :int 
         nectar_max :int
@@ -70,14 +83,16 @@ def creation_matrice_map() -> list[list[int]] :
             range_x2 = int(config.taille_spawn_x) # configuration pour l'équipe 1
             range_y1 = 0
             range_y2 = int(config.taille_spawn_y)
-        elif x == 2: #création de la zone de l'équipe 2 qui correspond au chiffre 2
-            range_y1 = config.nb_carre-int(config.taille_spawn_y)
-            range_y2 = config.nb_carre_y
-        elif x == 3: #création de la zone de l'équipe 3 qui correspond au chiffre 3
+        elif x == 2: #création de la zone de l'équipe 3 qui correspond au chiffre 3
             range_x1 = config.nb_carre_x-int(config.taille_spawn_x)
             range_x2 = config.nb_carre_x
             range_y1 = 0
             range_y2 = int(config.taille_spawn_y)
+        elif x ==3 :
+            range_x1 = 0
+            range_x2 = int(config.taille_spawn_x)
+            range_y1 = config.nb_carre-int(config.taille_spawn_y)
+            range_y2 = config.nb_carre_y
         elif x == 4: #création de la zone de l'équipe 4 qui correspond au chiffre 4
             range_x1 = config.nb_carre-int(config.taille_spawn_x)
             range_x2 = config.nb_carre_y
@@ -161,6 +176,7 @@ def case_valide(abeille:abeille)-> bool:
     """
     output2 = False
     compteur = 0
+    print(f"verif {abeille.equipe}, {abeille.x} | {abeille.y} {map[abeille.x][abeille.y]}")
     if  abeille.x > 15: # empêche les déplacement dans la partie stat de l'écran
         return False
     if map[abeille.x][abeille.y] == 0 or (map[abeille.x][abeille.y] == abeille.equipe or (10 <= map[abeille.x][abeille.y] <= (10 + config.max_nectar) )):
@@ -176,15 +192,18 @@ def case_valide(abeille:abeille)-> bool:
     else :
         output = False
     if output:
+        import lib_graphisme # import limité sinon crash
         for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
             #print(x)
             liste_joueur_actuelle = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
             for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
                 if liste_joueur_actuelle[y].x == abeille.x and liste_joueur_actuelle[y].y == abeille.y :
                     compteur += 1
-        if compteur == 1:
+        if compteur == 1 or compteur == 0:
             output2 = True
-    return output and output2
+    print(f"output VERIF 1{output}")
+    print(f"output VERIF 2{output2}")
+    return output
 def emplacement_fleurs(L_coord_case : list[tuple[int,int]]) : 
     """
     Retourne les coordonnées aléatoires pour le placement des fleurs
@@ -225,6 +244,12 @@ def liste_coord_possible()-> list[tuple[int,int]]:
 
     return L_coord_sans_base
 def velo_menu() -> tuple[int,int]:
+    """
+    Docstring for velo_menu
+    
+    :return: Renvoie un tuple donnant un velocité aléatoire à l'abeille du menu
+    :rtype: tuple[int, int]
+    """
     if random.randint(1,2) == 1: # randomisation de la direction de lancement (axe x)
         vx = 10
     else :
@@ -305,6 +330,7 @@ def Butinage(abeille:abeille,x:int,y:int)-> int:
     Note pour raison pratique pensez a actualiser les stat après l'appel ( non obligatoire mais instinctif pour debug et le joueur)
     """
     if est_Butinable(x,y) and (0<=abeille.nectar<abeille.nectar_max): # verification coté server + coté abeille
+       
         if abeille.nectar+config.nectar_par_butinage <= abeille.nectar_max and (map[x][y]-config.nectar_par_butinage >= 10):
             abeille.nectar =+ config.nectar_par_butinage # transfère "normal"
             map[x][y] -= config.nectar_par_butinage
@@ -371,7 +397,26 @@ def get_spawn_coor(j:int,mode:int = 3)-> type[tuple[int,int]] | int:
         else:
             output = config.nb_carre//2
     return output
-        
+def ya_quelqun(x:int,y:int)->bool:
+    """
+    Docstring for ya_quelqun
+    -> Renvoie un booléen en fonction si une abeille se trouve sur la position demandé
+
+    :param x: Position en l'axe x
+    :type x: int
+    :param y: Position en l'axe y
+    :type y: int
+    :return: Oui s'il y a une entité sur la case, l'inverse sinon
+    :rtype: bool
+    """
+    import lib_graphisme
+    for forx in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[forx].list_abeille # liste d'abeille pour le joueur actuelle
+        for fory in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            if liste_joueur_actuelle[fory].x == x and liste_joueur_actuelle[fory].y == y:
+                return True
+    return False
+
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 
 map = creation_matrice_map()

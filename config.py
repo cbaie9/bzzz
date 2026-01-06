@@ -34,7 +34,10 @@ map_player_color :str = "navy" # n'est plus utilisé actuellement -> /image/abei
 map_color_flower :str = "cyan"
 # ---------------------------
 # Gestion des Abeilles et joueur
-id_actuelle :int = 0
+id_actuelle_J1 :int = 0
+id_actuelle_J2 :int = 0
+id_actuelle_J3 :int = 0
+id_actuelle_J4 :int = 0
 id_actuelle_joueur :int = 0
 prix_abeille :int =3
 # voir backend pour les joueur

@@ -3,12 +3,13 @@ import config
 import backend
 
     # pour les warning, la fonction appelle ne renvoie en que des int dans les mode 1 et 2 -> voir definition fonction 
-J1 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(1,1)),int(backend.get_spawn_coor(1,2)),1,'debug')]) # pyright: ignore[reportArgumentType]
+J1 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(1,1)),int(backend.get_spawn_coor(1,2)),1,'eclaireuse')]) # pyright: ignore[reportArgumentType]
 J2 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(2,1)),int(backend.get_spawn_coor(2,2)),2,'eclaireuse')]) # pyright: ignore[reportArgumentType]
 J3 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(3,1)),int(backend.get_spawn_coor(3,2)),3,'eclaireuse')]) # pyright: ignore[reportArgumentType]
-J4 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(4,1)),int(backend.get_spawn_coor(4,1)),4,'eclaireuse')]) # pyright: ignore[reportArgumentType]
+J4 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(4,1)),int(backend.get_spawn_coor(4,2)),4,'eclaireuse')]) # pyright: ignore[reportArgumentType]
 global Players
 Players = [J1,J2,J3,J4]
+
 
 def dessiner_background(): #quadriage selon la couleur des spawn via la matrice map
     """
@@ -36,21 +37,31 @@ def start():
     dna_ab = False  
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     actualisation_background_map()
-    carre = g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')
+    liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
+    liste_img_p2 = [g.afficherImage(Players[1].list_abeille[0].x*config.taille_carre_x,Players[1].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
+    liste_img_p3 = [g.afficherImage(Players[2].list_abeille[0].x*config.taille_carre_x,Players[2].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
+    liste_img_p4 = [g.afficherImage(Players[3].list_abeille[0].x*config.taille_carre_x,Players[3].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
+    List_img :list[list[tke.ObjetGraphique]] = [liste_img_p1,liste_img_p2,liste_img_p3,liste_img_p4] 
     #-------------------Boucle principale
     while config.play:
         for joueur in Players:
+            afficher_toutes_les_abeilles(List_img)
             stat_part(joueur)
+            dessiner_case_deplacement(joueur.list_abeille[0]) 
+            afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
             clic = g.attendreClic()
+            dessiner_case_deplacement(joueur.list_abeille[0],False)
+            actualisation_background_map()
+            
             # previsualisation des déplacement
             if dna_ab == False:
-                dessiner_case_deplacement(joueur.list_abeille[0])
+                pass
+                #dessiner_case_deplacement(joueur.list_abeille[0])
             #re affichage des abeille du au calque de déplacement
-            afficher_abeille(joueur.list_abeille[0],carre)
             if clic is not None:
                 dna_ab = False
                 # calcul des collision
-                dessiner_case_deplacement(joueur.list_abeille[0]) # faux -> efface les cases de prévisualisation 
+                # faux -> efface les cases de prévisualisation 
                 # --------------- Determination du clic du joueur ( par cases )
                 if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
                     joueur.list_abeille[0].x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
@@ -59,7 +70,7 @@ def start():
                 joueur.list_abeille[0].y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
                 #---------
                 # est-ce que la case choisi est la valide
-                #print(joueur.list_abeille[0].x,joueur.list_abeille[0].y)
+                print(joueur.list_abeille[0].x,joueur.list_abeille[0].y)
                 if backend.case_valide(joueur.list_abeille[0]):
                     if backend.est_Butinable(joueur.list_abeille[0].x,joueur.list_abeille[0].y):
                         dna_ab = True # ne pas actusaliser la previsualisation
@@ -69,10 +80,11 @@ def start():
                             stat_part(joueur)
                     else :
                         # deplacement du joueur
-                        afficher_abeille(J1.list_abeille[0],carre)
+                        afficher_abeille(J1.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
                         dessiner_spawn()
                         joueur.list_abeille[0].y_old = joueur.list_abeille[0].y
                         joueur.list_abeille[0].x_old = joueur.list_abeille[0].x
+                        afficher_toutes_les_abeilles(List_img)
                 else :
                     # partie boutons stat :
                     # bouton quitter
@@ -92,8 +104,12 @@ def start():
                     # si le temps ajouter ici le système de déplacement automatique / IA
                     # --- ICI --- #
                     # ----------- #
-                if config.play == False:
-                    break
+                    joueur.list_abeille[0].y = joueur.list_abeille[0].y_old
+                    joueur.list_abeille[0].x = joueur.list_abeille[0].x_old
+                    afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
+                    if config.play == False:
+                        break
+                    # si le temps ajouter ici le système de déplacement automatique / IA
                 # verif de fin de tour
                 fin_de_tour(joueur)
     # Fermeture fenêtre
@@ -244,6 +260,8 @@ def stat_part(joueur:backend.joueur):
         g.dessinerRectangle(config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*x,config.size_btn_quit*2,config.size_btn_quit,color_creer)
 
 
+
+
 def dessiner_case_deplacement(abeille:backend.abeille, ecrire:bool = True):
     """
     Docstring for dessiner_case_deplacement
@@ -281,11 +299,13 @@ def actualisation_background_map():
     dessiner_background()
     dessiner_spawn()
 def afficher_abeille(abeille:backend.abeille,carre:tke.ObjetGraphique):
+
     g.supprimer(carre)
     if config.nb_carre >= 16:
-        carre = g.afficherImage(abeille.x_old*config.taille_carre_x,abeille.y_old*config.taille_carre_x,'./image/abeille_menu.png') # image de joueur normal
+        carre = g.afficherImage(abeille.x*config.taille_carre_x,abeille.y*config.taille_carre_x,'./image/abeille_menu.png') # image de joueur normal
     else :
-        carre = g.afficherImage(abeille.x_old*config.taille_carre_x,abeille.y_old*config.taille_carre_x,'./image/abeille_menu_mini.png') # image de joueur en mode mini ( prevu pour nb_carre = 8)
+        carre = g.afficherImage(abeille.x*config.taille_carre_x,abeille.y*config.taille_carre_x,'./image/abeille_menu_mini.png') # image de joueur en mode mini ( prevu pour nb_carre = 8)
+    return carre
 def fin_de_tour(joueur:backend.joueur):
     """
     Docstring for fin_de_tour
@@ -308,6 +328,16 @@ def fin_de_tour(joueur:backend.joueur):
                     liste_joueur_actuelle[y].nectar = 0
                     print(f"Fin de tour | joueur n°{x+1} | abeille n°{y} | nectar ab = {liste_joueur_actuelle[y].nectar}| nectar joueur {Players[x].nectar}")
     stat_part(joueur)
+def afficher_toutes_les_abeilles(liste_img:list[list[tke.ObjetGraphique]]):
+    for x in range(len(Players)): # for pour le nombre de joueur
+        #print(x)
+        liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+        for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            pass
+    for xl in range(len(liste_img)):
+        for yl in range(len(liste_img[xl])):
+            liste_img[xl][yl]
+
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 

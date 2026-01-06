@@ -333,10 +333,7 @@ def afficher_toutes_les_abeilles(liste_img:list[list[tke.ObjetGraphique]]):
         #print(x)
         liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
-            pass
-    for xl in range(len(liste_img)):
-        for yl in range(len(liste_img[xl])):
-            liste_img[xl][yl]
+            g.afficherImage(liste_joueur_actuelle[y].x*config.taille_carre_x,liste_joueur_actuelle[y].y*config.taille_carre_y,'./image/abeille_menu.png')
 
 
 ### lanecement du jeu ( info -> mettre les fonction avant pls)

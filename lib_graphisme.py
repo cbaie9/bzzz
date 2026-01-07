@@ -45,68 +45,71 @@ def start():
     while config.play:
         for joueur in Players:
             afficher_toutes_les_abeilles(List_img)
-            stat_part(joueur)
-            dessiner_case_deplacement(joueur.list_abeille[0]) 
+            # ---------------------- #
+            # Selection de l'abeille
+            #           ICI
+            # ---------------------- # 
+            stat_part(joueur) # actulisation des statistique pour le joueur actuelle
+            dessiner_case_deplacement(joueur.list_abeille[0])  # affichage des déplacement possible par le joueur
             afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
             clic = g.attendreClic()
-            dessiner_case_deplacement(joueur.list_abeille[0],False)
-            actualisation_background_map()
-            
-            # previsualisation des déplacement
-            #re affichage des abeille du au calque de déplacement
-            if clic is not None:
-                
-                # calcul des collision
-                # faux -> efface les cases de prévisualisation 
-                # --------------- Determination du clic du joueur ( par cases )
-                if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
-                    joueur.list_abeille[0].x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
-                else:
-                    joueur.list_abeille[0].x = 15 # si le joueur essaie, le colle à la bordure
-                joueur.list_abeille[0].y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
-                #---------
-                # est-ce que la case choisi est la valide
-                print(joueur.list_abeille[0].x,joueur.list_abeille[0].y)
-                if backend.case_valide(joueur.list_abeille[0]):
-                    if backend.est_Butinable(joueur.list_abeille[0].x,joueur.list_abeille[0].y):
-                        nectar_add = backend.Butinage(joueur.list_abeille[0],joueur.list_abeille[0].x,joueur.list_abeille[0].y)
-                        if nectar_add > 0:
-                            joueur.list_abeille[0].nectar += nectar_add
-                            stat_part(joueur)
-                    else :
-                        # deplacement du joueur
-                        afficher_abeille(J1.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
-                        dessiner_spawn()
-                        joueur.list_abeille[0].y_old = joueur.list_abeille[0].y
-                        joueur.list_abeille[0].x_old = joueur.list_abeille[0].x
-                        afficher_toutes_les_abeilles(List_img)
+            dessiner_case_deplacement(joueur.list_abeille[0],False) # faux -> efface les cases de prévisualisation 
+            actualisation_background_map() 
+            # --------------- Determination du clic du joueur ( par cases )
+            # calcul des collision
+            if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
+                joueur.list_abeille[0].x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
+            else:
+                joueur.list_abeille[0].x = 15 # si le joueur essaie, le colle à la bordure
+            joueur.list_abeille[0].y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
+            #---------
+            # est-ce que la case choisi est la valide
+            print(joueur.list_abeille[0].x,joueur.list_abeille[0].y)
+            if backend.case_valide(joueur.list_abeille[0]):
+                if backend.est_Butinable(joueur.list_abeille[0].x,joueur.list_abeille[0].y):
+                    nectar_add = backend.Butinage(joueur.list_abeille[0],joueur.list_abeille[0].x,joueur.list_abeille[0].y)
+                    if nectar_add > 0:
+                        joueur.list_abeille[0].nectar += nectar_add
+                        stat_part(joueur)
                 else :
-                    # partie boutons stat :
-                    # bouton quitter
-                    if config.xmax-config.size_btn_quit <= clic.x <= config.xmax and 0 <= clic.y <= config.size_btn_quit:
-                        print("Bye-Bye")
-                        config.play = False
-                    # boutons abeille : ouvrière
-                    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*5 <= clic.y <= ((config.ymax_game//8)*5)+config.size_btn_quit:
-                        # ajouter créer abeille ici (ouvrière)
-                        pass
-                    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*6 <= clic.y <= ((config.ymax_game//8)*6)+config.size_btn_quit:
-                        # ajouter créer abeille ici ( bourdon )
-                        pass
-                    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*7 <= clic.y <= ((config.ymax_game//8)*7)+config.size_btn_quit:
-                        # ajout créer abeille ici ( eclaireuse )
-                        pass
-                    # si le temps ajouter ici le système de déplacement automatique / IA
-                    # --- ICI --- #
-                    # ----------- #
-                    joueur.list_abeille[0].y = joueur.list_abeille[0].y_old
-                    joueur.list_abeille[0].x = joueur.list_abeille[0].x_old
-                    afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
-                    if config.play == False:
-                        break
-                    # si le temps ajouter ici le système de déplacement automatique / IA
-                # verif de fin de tour
-                fin_de_tour(joueur)
+                    # deplacement du joueur
+                    afficher_abeille(J1.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id]) # deplacement 'vituelle'
+                    dessiner_spawn()
+                    joueur.list_abeille[0].y_old = joueur.list_abeille[0].y
+                    joueur.list_abeille[0].x_old = joueur.list_abeille[0].x
+                    afficher_toutes_les_abeilles(List_img)
+            else :
+                # partie boutons stat :
+                # bouton quitter  
+                # INFO DEV :
+                #
+                #  on calcule les collision à la main sinon on aurait un pbm du clic qui serait forcement dans la zone de jeu 
+                #
+                #
+                if config.xmax-config.size_btn_quit <= clic.x <= config.xmax and 0 <= clic.y <= config.size_btn_quit:
+                    print("Bye-Bye")
+                    config.play = False
+                # boutons abeille : ouvrière
+                elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*(5) <= clic.y <= ((config.ymax_game//8)*5)+config.size_btn_quit:
+                    # ajouter créer abeille ici (ouvrière)
+                    print("abeille : ouvrière")
+                elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*5.5 <= clic.y <= ((config.ymax_game//8)*5.5)+config.size_btn_quit:
+                    # ajouter créer abeille ici ( bourdon )
+                    print("abeille : bourdon")
+                elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*6 <= clic.y <= ((config.ymax_game//8)*6)+config.size_btn_quit:
+                    # ajout créer abeille ici ( eclaireuse )
+                    print("abeille : eclaireuse")
+                # si le temps ajouter ici le système de déplacement automatique / IA
+                # --- ICI --- #
+                # ----------- #
+                joueur.list_abeille[0].y = joueur.list_abeille[0].y_old
+                joueur.list_abeille[0].x = joueur.list_abeille[0].x_old
+                afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
+                if config.play == False:
+                    break
+                # si le temps ajouter ici le système de déplacement automatique / IA
+            # verif de fin de tour
+            fin_de_tour(joueur)
     # Fermeture fenêtre
     g.fermerFenetre()
 def get_couleur_map(x:int,y:int)->str:
@@ -245,14 +248,14 @@ def stat_part(joueur:backend.joueur):
     # btn créer abeille :
     g.dessinerLigne(config.xmax_game,(config.ymax_game//8)*5-config.sub_margin_btn-20,config.xmax,(config.ymax_game//8)*5-config.sub_margin_btn-20,'black')
     g.afficherTexte(f'Créer des abeilles | coût : {config.prix_abeille}',config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*5-config.sub_margin_btn,'black',20)
-    for x in range(5,8):
+    for x in range(0,3):
         Nom = ['Ouvrière','Bourdon','Eclaireuse']
         if joueur.nectar >= 3 and backend.ya_quelqun(backend.get_spawn_coor(joueur.id+1,1),backend.get_spawn_coor(joueur.id+1,2)): # pyright: ignore[reportArgumentType] -> voir definition fonction mode 1 et 2 ne renvoie que des int et non des tuple
             color_creer :str = 'dark green'
         else:
             color_creer :str = 'red'
-        g.afficherTexte(f'{Nom[x-5]}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*x+config.sub_margin_btn,'orange',20)
-        g.dessinerRectangle(config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*x,config.size_btn_quit*2,config.size_btn_quit,color_creer)
+        g.afficherTexte(f'{Nom[x]}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*(5+x*0.5)+config.sub_margin_btn,'orange',20)
+        g.dessinerRectangle(config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*(5+x*0.5),config.size_btn_quit*2,config.size_btn_quit,color_creer)
 
 
 

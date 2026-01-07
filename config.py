@@ -31,7 +31,6 @@ spawn_equipe_4wh :str = 'indian red'
 map_error_color :str = 'orange'
 map_flower_color :str = "DeepPink2"
 map_player_color :str = "navy" # n'est plus utilisé actuellement -> /image/abeille_menu.png
-map_color_flower :str = "cyan"
 # ---------------------------
 # Gestion des Abeilles et joueur
 id_actuelle_J1 :int = 0

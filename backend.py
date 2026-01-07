@@ -257,7 +257,7 @@ def velo_menu() -> tuple[int,int]:
     else :
         vy = -10
     return vx,vy
-def get_list_deplacement(x :int, y:int) -> list[tuple[int,int]]:
+def get_list_deplacement(x :int, y:int,mode:int =1 ) -> list[tuple[int,int]]:
     """
     Docstring for get_list_deplacement
     - Renvoie une liste preliminaire pour l'affichage des case déplacable
@@ -280,7 +280,8 @@ def get_list_deplacement(x :int, y:int) -> list[tuple[int,int]]:
     # deuxième colonne
     if y > 0:
         list_deplace.append((x,y-1))
-    list_deplace.append((x,y)) # deplacement sur place ( ne bouge pas)
+    if mode == 1:
+        list_deplace.append((x,y)) # deplacement sur place ( ne bouge pas)
     if y+1 < config.nb_carre_y:
             #print(f"[debug]:[fonc:get_list_deplacement]:{y}, {config.nb_carre_y}")
             list_deplace.append((x,y+1))

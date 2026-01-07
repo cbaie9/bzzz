@@ -282,7 +282,7 @@ def get_list_deplacement(x :int, y:int) -> list[tuple[int,int]]:
         list_deplace.append((x,y-1))
     list_deplace.append((x,y)) # deplacement sur place ( ne bouge pas)
     if y+1 < config.nb_carre_y:
-            print(f"[debug]:[fonc:get_list_deplacement]:{y}, {config.nb_carre_y}")
+            #print(f"[debug]:[fonc:get_list_deplacement]:{y}, {config.nb_carre_y}")
             list_deplace.append((x,y+1))
     # trosième colonne
     if x+1 < config.nb_carre_x : 
@@ -291,7 +291,7 @@ def get_list_deplacement(x :int, y:int) -> list[tuple[int,int]]:
         list_deplace.append((x+1,y))
         if y+1 < config.nb_carre:
             list_deplace.append((x+1,y+1))
-    print(list_deplace)
+    #print(f"[debug]:[fonc]:[get_list_deplacement]: {list_deplace}")
     return list_deplace
 def est_Butinable(x:int,y:int)-> bool:
     """
@@ -307,7 +307,7 @@ def est_Butinable(x:int,y:int)-> bool:
     :rtype: bool
     """
     output = False
-    if x < 0 or y < 0 or y > config.nb_carre or x > config.nb_carre: # sécurité anti oob
+    if x < 0 or y < 0 or y >= config.nb_carre or x >= config.nb_carre: # sécurité anti oob
         return False
     elif 10 < map[x][y] <= config.max_nectar: 
         output = True   
@@ -329,7 +329,12 @@ def Butinage(abeille:abeille,x:int,y:int)-> int:
     Note pour raison pratique pensez a actualiser les stat après l'appel ( non obligatoire mais instinctif pour debug et le joueur)
     """
     if est_Butinable(x,y) and (0<=abeille.nectar<abeille.nectar_max): # verification coté server + coté abeille
-       
+            # determine si la case demandé est dans la map
+        print(f"erreur de oob x ={x}, y : {y}")
+        if not (0 <= x < config.nb_carre_x and 0 <= y < config.nb_carre_y-1):
+            
+            print(f"{config.taille_carre_x},   {config.taille_carre_y}")
+            return False
         if abeille.nectar+config.nectar_par_butinage <= abeille.nectar_max and (map[x][y]-config.nectar_par_butinage >= 10):
             abeille.nectar =+ config.nectar_par_butinage # transfère "normal"
             map[x][y] -= config.nectar_par_butinage

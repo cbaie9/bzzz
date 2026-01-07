@@ -156,7 +156,7 @@ def get_couleur_map(x:int,y:int)->str:
         else:
             output = config.spawn_equipe_4wh
     elif 10 <= backend.map[x][y] <= 100:
-        output = config.map_color_flower
+        output = config.map_flower_color
     else:
         output = config.map_error_color
     return output
@@ -281,7 +281,10 @@ def dessiner_case_deplacement(abeille:backend.abeille, ecrire:bool = True):
     for x_list,y_list in liste:
             if backend.case_valide(abeille):
                 if ecrire:
-                    g.dessinerRectangle(x_list*config.taille_carre_x,y_list*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,config.map_player_color)
+                    if backend.est_Butinable(x_list,y_list):
+                        g.dessinerRectangle(x_list*config.taille_carre_x,y_list*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,config.map_flower_color)
+                    else:
+                        g.dessinerRectangle(x_list*config.taille_carre_x,y_list*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,config.map_player_color)
                 else :
                     g.dessinerRectangle(x_list*config.taille_carre_x,y_list*config.taille_carre_y,config.taille_carre_x,config.taille_carre_y,get_couleur_map(x_list,y_list))
                 #debug print(f"feur xl :{x_list} ||| yl : {y_list}"))

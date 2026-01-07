@@ -352,7 +352,20 @@ def fin_de_tour(joueur:backend.joueur):
     """
     #print("------------------------")
     #backend.affichage_matrice(backend.map)
-    # ajout du nectar au joueur si l'abeille en porte et se trouve au spawn de son équipe    
+    # detection de fin de jeu
+    # Condition de fin de partie
+    #
+    # Condition 1 Limite de tous
+    config.tour_actuel += 1  # on vient de finir un tour
+    if config.tour_actuel >= config.time_out:  # TIME_OUT = 300 dans config.py [file:8]
+        print("Fin de partie : TIMEOUT atteint")
+        config.play = False  # va faire sortir du while config.play dans lib_graphisme
+    # Condition 2 : + de 50% du nectar en sa possesion
+    condi_fin2 = nectar_epuise()
+    if condi_fin2[0]:
+        config.play = False
+        print(f"################## \n La partie à un gagnant \n Bravo au joueur {condi_fin2[1]} qui a reussi à récolter plus la moitié du nectar possible \n ###############")
+    # ajout du nectar au joueur si l'abeille en porte et se trouve au spawn de son équipe   
     for x in range(len(Players)): # for pour le nombre de joueur
         #print(x)
         liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
@@ -463,7 +476,24 @@ def bouton_stat(clic :tk.Event[tk.Canvas]):
     elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*6 <= clic.y <= ((config.ymax_game//8)*6)+config.size_btn_quit:
         # ajout créer abeille ici ( eclaireuse )
         print("abeille : eclaireuse")
-    
+def nectar_epuise()->tuple[bool,int]:
+    nectar_abeilles = 0
+    joueur = 0
+    fin = False
+    for i in range(len(Players)):    # récuprère tous le nectar contenue sur l'abeille
+        for abeille in Players[i].list_abeille:
+            nectar_abeilles += abeille.nectar
+    nectar_map = 0
+    for i in range(config.nb_carre_x): # récuprer tous le nectar contenue dans les fleur 
+        for j in range(config.nb_carre_y):
+                if (10 <= backend.map[i][j] <= (10 + config.max_nectar) ): 
+                    nectar_map += (backend.map[i][j]-10)
+    for x in range(len(Players)): # récupere et compare tous le nectar des joueur avec les autres
+        if Players[x].nectar > nectar_map+nectar_abeilles:
+            joueur = x
+            fin = True
+            break
+    return (fin,joueur)
 ### lanecement du jeu ( info -> mettre les fonction avant pls)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 
     menu()

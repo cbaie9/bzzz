@@ -16,6 +16,7 @@ taille_spawn_y :int = round(sqrt(nb_carre_y))
 # --------------------------------------
 # Configuration des limite de fin de jeu
 time_out = 300 # nb de tour max 
+tour_actuel = 0 # nombre de tour actuelle
 # ----------------------------------
 # Configuration de l'interface de graphique
 map_default_color_black = 'black'

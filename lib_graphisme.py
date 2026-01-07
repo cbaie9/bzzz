@@ -477,6 +477,16 @@ def bouton_stat(clic :tk.Event[tk.Canvas]):
         # ajout créer abeille ici ( eclaireuse )
         print("abeille : eclaireuse")
 def nectar_epuise()->tuple[bool,int]:
+    """
+    Docstring for nectar_epuise
+    Verfie les condition de fin de jeu
+
+    Si un joueur possède plus de la moitié du nectar en circulation en sa possètion alors il est déclaré vaincure de la partie et la fonction renvoie un tuple vrai avec le numéro du joueur sinon le tuple sera (False,0)
+
+
+    :return: Description
+    :rtype: tuple[bool, int]
+    """
     nectar_abeilles = 0
     joueur = 0
     fin = False

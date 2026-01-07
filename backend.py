@@ -281,16 +281,17 @@ def get_list_deplacement(x :int, y:int) -> list[tuple[int,int]]:
     if y > 0:
         list_deplace.append((x,y-1))
     list_deplace.append((x,y)) # deplacement sur place ( ne bouge pas)
-    if y < config.nb_carre:
+    if y+1 < config.nb_carre_y:
+            print(f"[debug]:[fonc:get_list_deplacement]:{y}, {config.nb_carre_y}")
             list_deplace.append((x,y+1))
     # trosième colonne
-    if x < config.nb_carre_x : 
+    if x+1 < config.nb_carre_x : 
         if y > 0:
             list_deplace.append((x+1,y-1))
         list_deplace.append((x+1,y))
-        if y < config.nb_carre:
+        if y+1 < config.nb_carre:
             list_deplace.append((x+1,y+1))
-    #print(list_deplace)
+    print(list_deplace)
     return list_deplace
 def est_Butinable(x:int,y:int)-> bool:
     """

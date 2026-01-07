@@ -34,7 +34,6 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
 def start():
     # ----- Initailisation de la fenêtre + abeille
     global g
-    dna_ab = False  
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     actualisation_background_map()
     liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
@@ -54,12 +53,9 @@ def start():
             actualisation_background_map()
             
             # previsualisation des déplacement
-            if dna_ab == False:
-                pass
-                #dessiner_case_deplacement(joueur.list_abeille[0])
             #re affichage des abeille du au calque de déplacement
             if clic is not None:
-                dna_ab = False
+                
                 # calcul des collision
                 # faux -> efface les cases de prévisualisation 
                 # --------------- Determination du clic du joueur ( par cases )
@@ -73,7 +69,6 @@ def start():
                 print(joueur.list_abeille[0].x,joueur.list_abeille[0].y)
                 if backend.case_valide(joueur.list_abeille[0]):
                     if backend.est_Butinable(joueur.list_abeille[0].x,joueur.list_abeille[0].y):
-                        dna_ab = True # ne pas actusaliser la previsualisation
                         nectar_add = backend.Butinage(joueur.list_abeille[0],joueur.list_abeille[0].x,joueur.list_abeille[0].y)
                         if nectar_add > 0:
                             joueur.list_abeille[0].nectar += nectar_add

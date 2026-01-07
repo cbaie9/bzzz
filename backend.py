@@ -12,7 +12,7 @@ class abeille:
         self.x :int = x # Postion x du l'abeille
         self.y :int = y # Postion y de d'abeille
         self.equipe :int = equipe # Numero de l'équipe de l'abeille (Entre 1 et 4 compris)
-        self.nectar :int = 3 # Nombre de nectar que porte l'abeille actuelle 
+        self.nectar :int = 0 # Nombre de nectar que porte l'abeille actuelle 
         self.classe :str = classe # Classe de l'abeille (Esclaireuse etc)
         self.etat :bool = True # True = Vivant | False = KO
         if equipe == 1:
@@ -52,7 +52,7 @@ class joueur:
         self.list_abeille = list_abeille # liste d'abeille des joueurs
         self.id = config.id_actuelle_joueur
         config.id_actuelle_joueur += 1
-        self.nectar = 0
+        self.nectar = 3
         
 
 
@@ -421,6 +421,7 @@ def ya_quelqun(x:int,y:int)->bool:
             if liste_joueur_actuelle[fory].x == x and liste_joueur_actuelle[fory].y == y:
                 return True
     return False
+
 
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 

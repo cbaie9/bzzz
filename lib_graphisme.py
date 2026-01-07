@@ -1,6 +1,7 @@
 import tkiteasy as tke # type: ignore
 import config
 import backend
+import tkinter as tk # importation pour definition du type clic
 
     # pour les warning, la fonction appelle ne renvoie en que des int dans les mode 1 et 2 -> voir definition fonction 
 J1 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(1,1)),int(backend.get_spawn_coor(1,2)),1,'eclaireuse')]) # pyright: ignore[reportArgumentType]
@@ -32,42 +33,60 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
             compteur = 0
         
 def start():
+    """
+    Docstring for start
+
+    Code 'boucle' principal du jeu
+    """
     # ----- Initailisation de la fenêtre + abeille
     global g
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     actualisation_background_map()
-    liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
-    liste_img_p2 = [g.afficherImage(Players[1].list_abeille[0].x*config.taille_carre_x,Players[1].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
-    liste_img_p3 = [g.afficherImage(Players[2].list_abeille[0].x*config.taille_carre_x,Players[2].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
-    liste_img_p4 = [g.afficherImage(Players[3].list_abeille[0].x*config.taille_carre_x,Players[3].list_abeille[0].y*config.taille_carre_x,'./image/abeille_menu.png')]
+    liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,get_image_sprite(1,"ouvrière"))]
+    liste_img_p2 = [g.afficherImage(Players[1].list_abeille[0].x*config.taille_carre_x,Players[1].list_abeille[0].y*config.taille_carre_x,get_image_sprite(2,"ouvrière"))]
+    liste_img_p3 = [g.afficherImage(Players[2].list_abeille[0].x*config.taille_carre_x,Players[2].list_abeille[0].y*config.taille_carre_x,get_image_sprite(3,"ouvrière"))]
+    liste_img_p4 = [g.afficherImage(Players[3].list_abeille[0].x*config.taille_carre_x,Players[3].list_abeille[0].y*config.taille_carre_x,get_image_sprite(4,"ouvrière"))]
     List_img :list[list[tke.ObjetGraphique]] = [liste_img_p1,liste_img_p2,liste_img_p3,liste_img_p4] 
     #-------------------Boucle principale
     while config.play:
         for joueur in Players:
             afficher_toutes_les_abeilles(List_img)
+            stat_part(joueur) # actulisation des statistique pour le joueur actuelle
             # ---------------------- #
             # Selection de l'abeille
+            print("#########\n Selection de l'abeille a jouer \n ########## ")
+            selection = True
+            abeille_selectionnee = 0 # Initialisation de l'abeille selectionne si pbm
+            while selection:
+                clic = g.attendreClic()
+                bouton_stat(clic)
+                if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
+                    break
+                x_clf,y_clf = clic_formate(clic) # formatage du clic /case
+                for y in range(len(joueur.list_abeille)): # for pour la liste d'abeille / joueur
+                    if joueur.list_abeille[y].x == x_clf and joueur.list_abeille[y].y == y_clf:
+                        abeille_selectionnee = y
+                        selection = False
+                        break
+            if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
+                    break # sortie de la boucle prématurée car le bouton de fermeture à été appuiyée
+            print(f"########### \n fin selection : \n abeille selectionne :{abeille_selectionnee} \n ########")
             #           ICI
             # ---------------------- # 
-            stat_part(joueur) # actulisation des statistique pour le joueur actuelle
-            dessiner_case_deplacement(joueur.list_abeille[0])  # affichage des déplacement possible par le joueur
-            afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
+            dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee])  # affichage des déplacement possible par le joueur
+            afficher_toutes_les_abeilles(List_img)
             clic = g.attendreClic()
-            dessiner_case_deplacement(joueur.list_abeille[0],False) # faux -> efface les cases de prévisualisation 
+            dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee],False) # faux -> efface les cases de prévisualisation 
             actualisation_background_map() 
             # --------------- Determination du clic du joueur ( par cases )
             # calcul des collision
-            if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
-                joueur.list_abeille[0].x = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
-            else:
-                joueur.list_abeille[0].x = 15 # si le joueur essaie, le colle à la bordure
-            joueur.list_abeille[0].y = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
+            joueur.list_abeille[abeille_selectionnee].x, joueur.list_abeille[abeille_selectionnee].y = clic_formate(clic) # changement -> mtn dans fonction dédié pour éviter la répétition
             #---------
             # est-ce que la case choisi est la valide
-            print(joueur.list_abeille[0].x,joueur.list_abeille[0].y)
-            if backend.case_valide(joueur.list_abeille[0]):
-                if backend.est_Butinable(joueur.list_abeille[0].x,joueur.list_abeille[0].y):
-                    nectar_add = backend.Butinage(joueur.list_abeille[0],joueur.list_abeille[0].x,joueur.list_abeille[0].y)
+            #debug position# print(joueur.list_abeille[abeille_selectionnee].x,joueur.list_abeille[abeille_selectionnee].y)
+            if backend.case_valide(joueur.list_abeille[abeille_selectionnee]):
+                if backend.est_Butinable(joueur.list_abeille[0].x,joueur.list_abeille[abeille_selectionnee].y):
+                    nectar_add = backend.Butinage(joueur.list_abeille[0],joueur.list_abeille[0].x,joueur.list_abeille[abeille_selectionnee].y)
                     if nectar_add > 0:
                         joueur.list_abeille[0].nectar += nectar_add
                         stat_part(joueur)
@@ -79,33 +98,16 @@ def start():
                     joueur.list_abeille[0].x_old = joueur.list_abeille[0].x
                     afficher_toutes_les_abeilles(List_img)
             else :
-                # partie boutons stat :
-                # bouton quitter  
-                # INFO DEV :
+                # colision btn stat
+                bouton_stat(clic) # deplacer dans fonction dédié
                 #
-                #  on calcule les collision à la main sinon on aurait un pbm du clic qui serait forcement dans la zone de jeu 
-                #
-                #
-                if config.xmax-config.size_btn_quit <= clic.x <= config.xmax and 0 <= clic.y <= config.size_btn_quit:
-                    print("Bye-Bye")
-                    config.play = False
-                # boutons abeille : ouvrière
-                elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*(5) <= clic.y <= ((config.ymax_game//8)*5)+config.size_btn_quit:
-                    # ajouter créer abeille ici (ouvrière)
-                    print("abeille : ouvrière")
-                elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*5.5 <= clic.y <= ((config.ymax_game//8)*5.5)+config.size_btn_quit:
-                    # ajouter créer abeille ici ( bourdon )
-                    print("abeille : bourdon")
-                elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*6 <= clic.y <= ((config.ymax_game//8)*6)+config.size_btn_quit:
-                    # ajout créer abeille ici ( eclaireuse )
-                    print("abeille : eclaireuse")
                 # si le temps ajouter ici le système de déplacement automatique / IA
                 # --- ICI --- #
                 # ----------- #
                 joueur.list_abeille[0].y = joueur.list_abeille[0].y_old
                 joueur.list_abeille[0].x = joueur.list_abeille[0].x_old
                 afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
-                if config.play == False:
+                if config.play == False:  # pyright: ignore[reportUnnecessaryComparison] -> Warning faux due à la foncion bouton_stat
                     break
                 # si le temps ajouter ici le système de déplacement automatique / IA
             # verif de fin de tour
@@ -164,12 +166,22 @@ def get_couleur_map(x:int,y:int)->str:
         output = config.map_error_color
     return output
 def dessiner_spawn():
+    """
+    Docstring for dessiner_spawn
+
+    Affiche les maison 'spawn' à l'écran
+    """
     g.afficherImage(config.xmax_game-config.taille_image_spawn,config.ymax_game-config.taille_image_spawn,"./image/spawn/red.png")
     g.afficherImage(0,config.ymax_game-config.taille_image_spawn,"./image/spawn/blue.png")
     g.afficherImage(0,0,"./image/spawn/green.png")
     g.afficherImage(config.xmax_game-config.taille_image_spawn,0,"./image/spawn/violet.png")
 # <---------------------------------- >
 def menu(): # Menu du jeu
+    """
+    Docstring for menu
+
+    Code 'principal' pour le menu du jeu, calcul les colision de l'abeille avec les mur et son apparition au niveau du clic et le bouton pour lancer le jeu
+    """
     global g 
     menu_background()
     carre = g.afficherImage(config.taille_mini/2,config.taille_mini/2,'./image/abeille_menu.png')  # initialisation de l'abeille du menu "carre"
@@ -218,6 +230,11 @@ def menu(): # Menu du jeu
     g.fermerFenetre()
     start()
 def menu_background():
+    """
+    Docstring for menu_background
+
+    Affiche le menu quand on lance le jeu ( arrière plan )
+    """
     global g
     g = tke.ouvrirFenetre(config.taille_mini, config.taille_mini)
     g.afficherImage(0,0,'./image/background_menu.png')
@@ -229,6 +246,14 @@ def menu_background():
     g.afficherTexte("Jouer",config.taille_mini/2,config.taille_mini-config.taille_mini/8,'white')
 
 def stat_part(joueur:backend.joueur):
+    """
+    Docstring for stat_part
+
+    Actualise la partie "statistique" de l'écran en fonction du tour du joueur qui est en cours
+    
+    :param joueur: Description
+    :type joueur: backend.joueur
+    """
     global g
     
     g.dessinerRectangle(config.xmax_game,0,config.xmax_stat,config.ymax_game,'gray')
@@ -300,6 +325,16 @@ def actualisation_background_map():
     dessiner_background()
     dessiner_spawn()
 def afficher_abeille(abeille:backend.abeille,carre:tke.ObjetGraphique):
+    """
+    Docstring for afficher_abeille
+
+    Affiche l'abeille demandée à l'écran
+    
+    :param abeille: Description
+    :type abeille: backend.abeille
+    :param carre: Description
+    :type carre: tke.ObjetGraphique
+    """
 
     g.supprimer(carre)
     if config.nb_carre >= 16:
@@ -330,12 +365,31 @@ def fin_de_tour(joueur:backend.joueur):
                     print(f"Fin de tour | joueur n°{x+1} | abeille n°{y} | nectar ab = {liste_joueur_actuelle[y].nectar}| nectar joueur {Players[x].nectar}")
     stat_part(joueur)
 def afficher_toutes_les_abeilles(liste_img:list[list[tke.ObjetGraphique]]):
+    """
+    Docstring for afficher_toutes_les_abeilles
+
+    Comme le nom est explicit, affiche tous les abeilles de tous les joueur à l'écran 
+    
+    :param liste_img: Description
+    :type liste_img: list[list[tke.ObjetGraphique]]
+    """
     for x in range(len(Players)): # for pour le nombre de joueur
         liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
             g.afficherImage(liste_joueur_actuelle[y].x*config.taille_carre_x,liste_joueur_actuelle[y].y*config.taille_carre_y,get_image_sprite(liste_joueur_actuelle[y].equipe,liste_joueur_actuelle[y].classe))
 
 def get_image_sprite(equipe:int,class_ab:str)->str:
+    """
+    Docstring for get_image_sprite
+    Retourne le chemin direct des texture des abeilles de tous type sous forme de 'path'
+    
+    :param equipe: Description
+    :type equipe: int
+    :param class_ab: Description
+    :type class_ab: str
+    :return: Description
+    :rtype: str
+    """
     output = './image/abeille_menu.png'
     if equipe == 1:
         if class_ab == "ouvrière":
@@ -366,8 +420,50 @@ def get_image_sprite(equipe:int,class_ab:str)->str:
         elif class_ab == "bourdon":
             output = "./image/abeilles/bourdon/bd_rouge.png"
     return output
+def clic_formate(clic :tk.Event[tk.Canvas]):
+    """
+    Docstring for clic_formate
+    Retourne le clic formaté selon le système de case de la matrice
+    Par défaut demande le clic si non fournis précédement
+    
+    :param clic: Description
+    :type clic: tk.Event[tk.Canvas]
+    """
+    if (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x <= 15: # collision unique pour éviter que le joueur ne puisse pas aller sur la part stat
+        x:int = (clic.x - clic.x % config.taille_carre_x)//config.taille_carre_x
+    else:
+                x = 15 # si le joueur essaie, le colle à la bordure
+    y:int = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
+    return x,y
+def bouton_stat(clic :tk.Event[tk.Canvas]):
+    """
+    Docstring for bouton_stat
 
-
+    Calcul des colision de bouton de la partie statistique en fonction du clic du joueur  
+    
+    :param clic: Description
+    :type clic: tk.Event[tk.Canvas]
+    """
+    # partie boutons stat :
+    # bouton quitter  
+    # INFO DEV :
+    #
+    #  on calcule les collision à la main sinon on aurait un pbm du clic qui serait forcement dans la zone de jeu 
+    #
+    if config.xmax-config.size_btn_quit <= clic.x <= config.xmax and 0 <= clic.y <= config.size_btn_quit:
+            print("Bye-Bye")
+            config.play = False
+        # boutons abeille : ouvrière
+    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*(5) <= clic.y <= ((config.ymax_game//8)*5)+config.size_btn_quit:
+        # ajouter créer abeille ici (ouvrière)
+        print("abeille : ouvrière")
+    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*5.5 <= clic.y <= ((config.ymax_game//8)*5.5)+config.size_btn_quit:
+        # ajouter créer abeille ici ( bourdon )
+        print("abeille : bourdon")
+    elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*6 <= clic.y <= ((config.ymax_game//8)*6)+config.size_btn_quit:
+        # ajout créer abeille ici ( eclaireuse )
+        print("abeille : eclaireuse")
+    
 ### lanecement du jeu ( info -> mettre les fonction avant pls)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 
     menu()

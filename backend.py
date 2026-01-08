@@ -424,7 +424,27 @@ def ya_quelqun(x:int,y:int)->bool:
             if liste_joueur_actuelle[fory].x == x and liste_joueur_actuelle[fory].y == y:
                 return True
     return False
+def creation_abeille(joueur:joueur,classe:str) :
+    """
+    Docstring for creation_abeille
+    -> ajoute une nouvelle abeille à la liste du joueur passé en paramètre si la case du spawn n'est pas déjà occupée et qu'il possède suffisemment de nectar
 
+    :param joueur: joueur
+    :type joueur: joueur
+    :param classe: bourdon éclaireuse ou l'autre
+    :type classe: str
+    """
+    x_spawn = int(get_spawn_coor(joueur.id+1,1))  # type: ignore # voir defininition fonction pour les erreur 
+    y_spawn = int(get_spawn_coor(joueur.id+1,2))    # type: ignore
+    #             return None #on retourne None afin de pouvoir vérifier certaines conditions dans le lib_graphisme lors de la création d'une nouvelle abeille 
+    if ya_quelqun(x_spawn,y_spawn) : #si l'espace n'est pas occupé 
+        if joueur.nectar >= config.prix_abeille : #si le joueur possède suffisemment de nectar
+            print(f"[fonction creation abeille]: retour abeille valide-> sortie de la fonction")
+            return  abeille(x_spawn, y_spawn, joueur.id+1,classe) #on créer une nouvelle entrée de la classe abeille, on fait joueur.id +1 car c'est {0,1,2,3} != {1,2,3,4}
+        
+    else :
+        return None # s'il n'a pas suffisemment de nectar 
+   
 
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 

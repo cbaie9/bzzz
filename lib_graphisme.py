@@ -59,9 +59,18 @@ def start():
             while selection:
                 clic = g.attendreClic()
                 clic_custom = backend.clic_custom(clic.x,clic.y) # classe clic custom pour éviter les problème de typpage, aucun changement fonctionnelle
-                bouton_stat(clic_custom)
+                retour_btn = bouton_stat(clic_custom,joueur)
                 if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
                     break
+                elif 1 <= retour_btn  <= 3:
+                    classe_str = ['ouvrière','bourdon','eclaireuse']
+                    joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
+                    joueur.nectar -= config.prix_abeille
+                    texture_ab = get_image_sprite(joueur.id+1,classe_str[retour_btn-1])
+                    List_img[joueur.id].append(g.afficherImage(Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].x*config.taille_carre_x,Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].y*config.taille_carre_x,texture_ab))
+                    afficher_toutes_les_abeilles(List_img)
+                    print(len(List_img[joueur.id]))
+                # si le temps ajouter ici le système de déplacement automatique / IA
                 x_clic_formate,y_clic_formate = clic_formate(clic_custom) # formatage du clic /case
                 for y in range(len(joueur.list_abeille)): # for pour la liste d'abeille / joueur
                     if joueur.list_abeille[y].x == x_clic_formate and joueur.list_abeille[y].y == y_clic_formate:
@@ -100,7 +109,9 @@ def start():
                     afficher_toutes_les_abeilles(List_img)
             else :
                 # colision btn stat
-                bouton_stat(clic_custom) # deplacer dans fonction dédié | clic custom = classe pour éviter les pbm de typpage
+                print("entree")
+                retour_btn = bouton_stat(clic_custom,joueur) # deplacer dans fonction dédié | clic custom = classe pour éviter les pbm de typpage
+                print(f"retour_btn {retour_btn}")
                 #
                 # si le temps ajouter ici le système de déplacement automatique / IA
                 # --- ICI --- #
@@ -110,6 +121,18 @@ def start():
                 afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
                 if config.play == False:  # pyright: ignore[reportUnnecessaryComparison] -> Warning faux due à la foncion bouton_stat
                     break
+
+                # INFO DEV : les retour de backend.creation_abeille ne sont pas None car verification de bouton_stat
+                #
+                #
+                elif 1 <= retour_btn  <= 3:
+                    classe_str = ['ouvrière','bourdon','eclaireuse']
+                    joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
+                    joueur.nectar -= config.prix_abeille
+                    texture_ab = get_image_sprite(joueur.id+1,classe_str[retour_btn-1])
+                    List_img[joueur.id].append(g.afficherImage(Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].x*config.taille_carre_x,Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].y*config.taille_carre_x,texture_ab))
+                    afficher_toutes_les_abeilles(List_img)
+                    print(len(List_img[joueur.id]))
                 # si le temps ajouter ici le système de déplacement automatique / IA
             # verif de fin de tour
             fin_de_tour(joueur)
@@ -414,18 +437,18 @@ def get_image_sprite(equipe:int,class_ab:str)->str:
             output = "./image/abeilles/bourdon/bd_vert.png"
     elif equipe == 2:
         if class_ab == "ouvrière":
-            output = "./image/abeilles/ouvrière/bleu.png"
-        elif class_ab == "eclaireuse":
-            output = "./image/abeilles/eclaireuse/ec_bleu.png"
-        elif class_ab == "bourdon":
-            output = "./image/abeilles/bourdon/bd_bleu.png"
-    elif equipe == 3:
-        if class_ab == "ouvrière":
             output = "./image/abeilles/ouvrière/violet.png"
         elif class_ab == "eclaireuse":
             output = "./image/abeilles/eclaireuse/ec_violet.png"
         elif class_ab == "bourdon":
             output = "./image/abeilles/bourdon/bd_violet.png"
+    elif equipe == 3:
+        if class_ab == "ouvrière":
+            output = "./image/abeilles/ouvrière/bleu.png"
+        elif class_ab == "eclaireuse":
+            output = "./image/abeilles/eclaireuse/ec_bleu.png"
+        elif class_ab == "bourdon":
+            output = "./image/abeilles/bourdon/bd_bleu.png"
     elif equipe == 4:
         if class_ab == "ouvrière":
             output = "./image/abeilles/ouvrière/rouge.png"
@@ -449,7 +472,7 @@ def clic_formate(clic:backend.clic_custom):
                 x = 15 # si le joueur essaie, le colle à la bordure
     y:int = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
     return x,y
-def bouton_stat(clic: backend.clic_custom):
+def bouton_stat(clic: backend.clic_custom,joueur:backend.joueur)->int:
     """
     Docstring for bouton_stat
 
@@ -471,12 +494,21 @@ def bouton_stat(clic: backend.clic_custom):
     elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*(5) <= clic.y <= ((config.ymax_game//8)*5)+config.size_btn_quit:
         # ajouter créer abeille ici (ouvrière)
         print("abeille : ouvrière")
+        if (backend.creation_abeille(joueur,'ouvrière')) is not None:
+            return 1
     elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*5.5 <= clic.y <= ((config.ymax_game//8)*5.5)+config.size_btn_quit:
         # ajouter créer abeille ici ( bourdon )
         print("abeille : bourdon")
+        if (backend.creation_abeille(joueur,'bourdon')) is not None:
+            return 2
     elif config.xmax_game+config.xmax_stat//2 <= clic.x <= ((config.xmax_game+config.xmax_stat//2)+2*config.size_btn_quit) and (config.ymax_game//8)*6 <= clic.y <= ((config.ymax_game//8)*6)+config.size_btn_quit:
         # ajout créer abeille ici ( eclaireuse )
         print("abeille : eclaireuse")
+        if (backend.creation_abeille(joueur,'ouvrière')) is not None:
+            return 3
+        
+    
+    return -1
 def nectar_epuise()->tuple[bool,int]:
     """
     Docstring for nectar_epuise

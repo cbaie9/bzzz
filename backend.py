@@ -437,7 +437,7 @@ def creation_abeille(joueur:joueur,classe:str) :
     x_spawn = int(get_spawn_coor(joueur.id+1,1))  # type: ignore # voir defininition fonction pour les erreur 
     y_spawn = int(get_spawn_coor(joueur.id+1,2))    # type: ignore
     #             return None #on retourne None afin de pouvoir vérifier certaines conditions dans le lib_graphisme lors de la création d'une nouvelle abeille 
-    if ya_quelqun(x_spawn,y_spawn) : #si l'espace n'est pas occupé 
+    if not ya_quelqun(x_spawn,y_spawn) : #si l'espace n'est pas occupé 
         if joueur.nectar >= config.prix_abeille : #si le joueur possède suffisemment de nectar
             print(f"[fonction creation abeille]: retour abeille valide-> sortie de la fonction")
             return  abeille(x_spawn, y_spawn, joueur.id+1,classe) #on créer une nouvelle entrée de la classe abeille, on fait joueur.id +1 car c'est {0,1,2,3} != {1,2,3,4}

@@ -1,7 +1,6 @@
 import tkiteasy as tke # type: ignore
 import config
 import backend
-import tkinter as tk # importation pour definition du type clic
 
     # pour les warning, la fonction appelle ne renvoie en que des int dans les mode 1 et 2 -> voir definition fonction 
 J1 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(1,1)),int(backend.get_spawn_coor(1,2)),1,'eclaireuse')]) # pyright: ignore[reportArgumentType]
@@ -59,12 +58,13 @@ def start():
             abeille_selectionnee = 0 # Initialisation de l'abeille selectionne si pbm
             while selection:
                 clic = g.attendreClic()
-                bouton_stat(clic)
+                clic_custom = backend.clic_custom(clic.x,clic.y) # classe clic custom pour éviter les problème de typpage, aucun changement fonctionnelle
+                bouton_stat(clic_custom)
                 if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
                     break
-                x_clf,y_clf = clic_formate(clic) # formatage du clic /case
+                x_clic_formate,y_clic_formate = clic_formate(clic_custom) # formatage du clic /case
                 for y in range(len(joueur.list_abeille)): # for pour la liste d'abeille / joueur
-                    if joueur.list_abeille[y].x == x_clf and joueur.list_abeille[y].y == y_clf:
+                    if joueur.list_abeille[y].x == x_clic_formate and joueur.list_abeille[y].y == y_clic_formate:
                         abeille_selectionnee = y
                         selection = False
                         break
@@ -76,11 +76,12 @@ def start():
             dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee])  # affichage des déplacement possible par le joueur
             afficher_toutes_les_abeilles(List_img)
             clic = g.attendreClic()
+            clic_custom = backend.clic_custom(clic.x,clic.y) # classe clic custom pour éviter les problème de typpage, aucun changement fonctionnelle
             dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee],False) # faux -> efface les cases de prévisualisation 
             actualisation_background_map() 
             # --------------- Determination du clic du joueur ( par cases )
             # calcul des collision
-            joueur.list_abeille[abeille_selectionnee].x, joueur.list_abeille[abeille_selectionnee].y = clic_formate(clic) # changement -> mtn dans fonction dédié pour éviter la répétition
+            joueur.list_abeille[abeille_selectionnee].x, joueur.list_abeille[abeille_selectionnee].y = clic_formate(clic_custom) # changement -> mtn dans fonction dédié pour éviter la répétition
             #---------
             # est-ce que la case choisi est la valide
             #debug position# print(joueur.list_abeille[abeille_selectionnee].x,joueur.list_abeille[abeille_selectionnee].y)
@@ -99,7 +100,7 @@ def start():
                     afficher_toutes_les_abeilles(List_img)
             else :
                 # colision btn stat
-                bouton_stat(clic) # deplacer dans fonction dédié
+                bouton_stat(clic_custom) # deplacer dans fonction dédié | clic custom = classe pour éviter les pbm de typpage
                 #
                 # si le temps ajouter ici le système de déplacement automatique / IA
                 # --- ICI --- #
@@ -433,7 +434,7 @@ def get_image_sprite(equipe:int,class_ab:str)->str:
         elif class_ab == "bourdon":
             output = "./image/abeilles/bourdon/bd_rouge.png"
     return output
-def clic_formate(clic :tk.Event[tk.Canvas]):
+def clic_formate(clic:backend.clic_custom):
     """
     Docstring for clic_formate
     Retourne le clic formaté selon le système de case de la matrice
@@ -448,7 +449,7 @@ def clic_formate(clic :tk.Event[tk.Canvas]):
                 x = 15 # si le joueur essaie, le colle à la bordure
     y:int = (clic.y - clic.y % config.taille_carre_y)//config.taille_carre_y
     return x,y
-def bouton_stat(clic :tk.Event[tk.Canvas]):
+def bouton_stat(clic: backend.clic_custom):
     """
     Docstring for bouton_stat
 

@@ -53,8 +53,11 @@ class joueur:
         self.id = config.id_actuelle_joueur
         config.id_actuelle_joueur += 1
         self.nectar = 3
+class clic_custom:
+    def __init__(self, x:int,y:int) -> None:
+        self.x = x # Position x du clic
+        self.y = y # Position y du clic
         
-
 
 def creation_matrice_perso() -> list[list[int]]:
     """

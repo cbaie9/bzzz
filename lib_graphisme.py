@@ -30,7 +30,7 @@ def dessiner_background(): #quadriage selon la couleur des spawn via la matrice 
             compteur = 1
         else: 
             compteur = 0
-        
+
 def start():
     """
     Docstring for start
@@ -49,95 +49,105 @@ def start():
     #-------------------Boucle principale
     while config.play:
         for joueur in Players:
-            afficher_toutes_les_abeilles(List_img)
-            stat_part(joueur) # actulisation des statistique pour le joueur actuelle
-            # ---------------------- #
-            # Selection de l'abeille
-            print("#########\n Selection de l'abeille a jouer \n ########## ")
-            selection = True
-            abeille_selectionnee = 0 # Initialisation de l'abeille selectionne si pbm
-            while selection:
+            # Gestion du tour multi-abeilles
+            abeilles_restantes = [i for i in range(len(joueur.list_abeille))] #création de la liste qui contient toutes les abeilles du joueur actuel sous forme [0,1,2] qui correspondent aux indices des abeilles
+            
+            while len(abeilles_restantes) > 0 and config.play: #tant qu'il y a des abeilles dans la liste / tant que le bouton stop croix rouge n'est pas cliqué
+                afficher_toutes_les_abeilles(List_img)
+                stat_part(joueur) # actulisation des statistique pour le joueur actuelle
+                # ---------------------- #
+                # Selection de l'abeille
+                print("#########\n Selection de l'abeille a jouer \n ########## ")
+                selection = True
+                abeille_selectionnee = 0 # Initialisation de l'abeille selectionne si pbm
+                while selection:
+                    clic = g.attendreClic()
+                    clic_custom = backend.clic_custom(clic.x,clic.y) # classe clic custom pour éviter les problème de typpage, aucun changement fonctionnelle
+                    retour_btn = bouton_stat(clic_custom,joueur)
+                    if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
+                        break
+                    elif 1 <= retour_btn  <= 3:
+                        classe_str = ['ouvrière','bourdon','eclaireuse']
+                        joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
+                        joueur.nectar -= config.prix_abeille
+                        texture_ab = get_image_sprite(joueur.id+1,classe_str[retour_btn-1])
+                        List_img[joueur.id].append(g.afficherImage(Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].x*config.taille_carre_x,Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].y*config.taille_carre_x,texture_ab))
+                        afficher_toutes_les_abeilles(List_img)
+                        print(len(List_img[joueur.id]))
+                        abeilles_restantes.append(len(joueur.list_abeille)-1) #on rajoute l'indice de l'abeille à la liste par ex [0,1,2,3] + [4] car la nouvelle abeille est la cinquième
+                    # si le temps ajouter ici le système de déplacement automatique / IA
+                    x_clic_formate,y_clic_formate = clic_formate(clic_custom) # formatage du clic /case
+                    for i in abeilles_restantes: #on parcourt tout les "id" des abeilles
+                        if joueur.list_abeille[i].x == x_clic_formate and joueur.list_abeille[i].y == y_clic_formate: #si l'abeille se trouve sur la case sur laquelle on vient de cliquer
+                            abeille_selectionnee = i #l'abeille sélectionnée est l'indice par ex si on sélectionne l'abeille 0 alors cette variable = 0                             selection = False
+                            selection = False #on a finit la sélection on peut passer au reste
+                            break
+                if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
+                        break # sortie de la boucle prématurée car le bouton de fermeture à été appuiyée
+                print(f"########### \n fin selection : \n abeille selectionne :{abeille_selectionnee} \n ########")
+                #          ICI
+                # ---------------------- # 
+                dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee])  # affichage des déplacement possible par le joueur
+                afficher_toutes_les_abeilles(List_img)
                 clic = g.attendreClic()
                 clic_custom = backend.clic_custom(clic.x,clic.y) # classe clic custom pour éviter les problème de typpage, aucun changement fonctionnelle
-                retour_btn = bouton_stat(clic_custom,joueur)
-                if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
-                    break
-                elif 1 <= retour_btn  <= 3:
-                    classe_str = ['ouvrière','bourdon','eclaireuse']
-                    joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
-                    joueur.nectar -= config.prix_abeille
-                    texture_ab = get_image_sprite(joueur.id+1,classe_str[retour_btn-1])
-                    List_img[joueur.id].append(g.afficherImage(Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].x*config.taille_carre_x,Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].y*config.taille_carre_x,texture_ab))
-                    afficher_toutes_les_abeilles(List_img)
-                    print(len(List_img[joueur.id]))
-                # si le temps ajouter ici le système de déplacement automatique / IA
-                x_clic_formate,y_clic_formate = clic_formate(clic_custom) # formatage du clic /case
-                for y in range(len(joueur.list_abeille)): # for pour la liste d'abeille / joueur
-                    if joueur.list_abeille[y].x == x_clic_formate and joueur.list_abeille[y].y == y_clic_formate:
-                        abeille_selectionnee = y
-                        selection = False
-                        break
-            if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
-                    break # sortie de la boucle prématurée car le bouton de fermeture à été appuiyée
-            print(f"########### \n fin selection : \n abeille selectionne :{abeille_selectionnee} \n ########")
-            #           ICI
-            # ---------------------- # 
-            dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee])  # affichage des déplacement possible par le joueur
-            afficher_toutes_les_abeilles(List_img)
-            clic = g.attendreClic()
-            clic_custom = backend.clic_custom(clic.x,clic.y) # classe clic custom pour éviter les problème de typpage, aucun changement fonctionnelle
-            dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee],False) # faux -> efface les cases de prévisualisation 
-            actualisation_background_map() 
-            # --------------- Determination du clic du joueur ( par cases )
-            # calcul des collision
-            joueur.list_abeille[abeille_selectionnee].x, joueur.list_abeille[abeille_selectionnee].y = clic_formate(clic_custom) # changement -> mtn dans fonction dédié pour éviter la répétition
-            #---------
-            # est-ce que la case choisi est la valide
-            #debug position# print(joueur.list_abeille[abeille_selectionnee].x,joueur.list_abeille[abeille_selectionnee].y)
-            if backend.case_valide(joueur.list_abeille[abeille_selectionnee]):
-                if backend.est_Butinable(joueur.list_abeille[0].x,joueur.list_abeille[abeille_selectionnee].y):
-                    nectar_add = backend.Butinage(joueur.list_abeille[0],joueur.list_abeille[0].x,joueur.list_abeille[abeille_selectionnee].y)
-                    if nectar_add > 0:
-                        joueur.list_abeille[0].nectar += nectar_add
-                        stat_part(joueur)
+                dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee],False) # faux -> efface les cases de prévisualisation 
+                actualisation_background_map() 
+                # --------------- Determination du clic du joueur ( par cases )
+                # calcul des collision
+                joueur.list_abeille[abeille_selectionnee].x_old = joueur.list_abeille[abeille_selectionnee].x #on actualise les coordonnées de l'abeille
+                joueur.list_abeille[abeille_selectionnee].y_old = joueur.list_abeille[abeille_selectionnee].y # idem
+                joueur.list_abeille[abeille_selectionnee].x, joueur.list_abeille[abeille_selectionnee].y = clic_formate(clic_custom) # changement -> mtn dans fonction dédié pour éviter la répétition
+                #---------
+                # est-ce que la case choisi est la valide
+                #debug position# print(joueur.list_abeille[abeille_selectionnee].x,joueur.list_abeille[abeille_selectionnee].y)
+                if backend.case_valide(joueur.list_abeille[abeille_selectionnee]):
+                    if backend.est_Butinable(joueur.list_abeille[abeille_selectionnee].x,joueur.list_abeille[abeille_selectionnee].y): # [MODIF]
+                        nectar_add = backend.Butinage(joueur.list_abeille[abeille_selectionnee],joueur.list_abeille[abeille_selectionnee].x,joueur.list_abeille[abeille_selectionnee].y) # [MODIF]
+                        if nectar_add > 0:
+                            joueur.list_abeille[abeille_selectionnee].nectar += nectar_add #l'abeille sélectionnée reçoit le nectar
+                            stat_part(joueur)
+                    else :
+                        # deplacement du joueur
+                        afficher_abeille(joueur.list_abeille[abeille_selectionnee],List_img[joueur.id][abeille_selectionnee]) # [MODIF]
+                        dessiner_spawn()
+                        afficher_toutes_les_abeilles(List_img)
+                    
+                    abeilles_restantes.remove(abeille_selectionnee) #on retire l'abeille qui vient d'être faite 
                 else :
-                    # deplacement du joueur
-                    afficher_abeille(J1.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id]) # deplacement 'vituelle'
-                    dessiner_spawn()
-                    joueur.list_abeille[0].y_old = joueur.list_abeille[0].y
-                    joueur.list_abeille[0].x_old = joueur.list_abeille[0].x
-                    afficher_toutes_les_abeilles(List_img)
-            else :
-                # colision btn stat
-                print("entree")
-                retour_btn = bouton_stat(clic_custom,joueur) # deplacer dans fonction dédié | clic custom = classe pour éviter les pbm de typpage
-                print(f"retour_btn {retour_btn}")
-                #
-                # si le temps ajouter ici le système de déplacement automatique / IA
-                # --- ICI --- #
-                # ----------- #
-                joueur.list_abeille[0].y = joueur.list_abeille[0].y_old
-                joueur.list_abeille[0].x = joueur.list_abeille[0].x_old
-                afficher_abeille(joueur.list_abeille[0],List_img[joueur.id][joueur.list_abeille[0].id])
-                if config.play == False:  # pyright: ignore[reportUnnecessaryComparison] -> Warning faux due à la foncion bouton_stat
-                    break
+                    # colision btn stat
+                    print("entree")
+                    retour_btn = bouton_stat(clic_custom,joueur) # deplacer dans fonction dédié | clic custom = classe pour éviter les pbm de typpage
+                    print(f"retour_btn {retour_btn}")
+                    #
+                    # si le temps ajouter ici le système de déplacement automatique / IA
+                    # --- ICI --- #
+                    # ----------- #
+                    joueur.list_abeille[abeille_selectionnee].y = joueur.list_abeille[abeille_selectionnee].y_old
+                    joueur.list_abeille[abeille_selectionnee].x = joueur.list_abeille[abeille_selectionnee].x_old
+                    afficher_abeille(joueur.list_abeille[abeille_selectionnee],List_img[joueur.id][abeille_selectionnee])
+                    if config.play == False:  # pyright: ignore[reportUnnecessaryComparison] -> Warning faux due à la foncion bouton_stat
+                        break
 
-                # INFO DEV : les retour de backend.creation_abeille ne sont pas None car verification de bouton_stat
-                #
-                #
-                elif 1 <= retour_btn  <= 3:
-                    classe_str = ['ouvrière','bourdon','eclaireuse']
-                    joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
-                    joueur.nectar -= config.prix_abeille
-                    texture_ab = get_image_sprite(joueur.id+1,classe_str[retour_btn-1])
-                    List_img[joueur.id].append(g.afficherImage(Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].x*config.taille_carre_x,Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].y*config.taille_carre_x,texture_ab))
-                    afficher_toutes_les_abeilles(List_img)
-                    print(len(List_img[joueur.id]))
-                # si le temps ajouter ici le système de déplacement automatique / IA
+                    # INFO DEV : les retour de backend.creation_abeille ne sont pas None car verification de bouton_stat
+                    #
+                    #
+                    elif 1 <= retour_btn  <= 3:
+                        classe_str = ['ouvrière','bourdon','eclaireuse']
+                        joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
+                        joueur.nectar -= config.prix_abeille
+                        texture_ab = get_image_sprite(joueur.id+1,classe_str[retour_btn-1])
+                        List_img[joueur.id].append(g.afficherImage(Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].x*config.taille_carre_x,Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].y*config.taille_carre_x,texture_ab))
+                        afficher_toutes_les_abeilles(List_img)
+                        print(len(List_img[joueur.id]))
+                        abeilles_restantes.append(len(joueur.list_abeille)-1)#on rajoute l'indice de l'abeille à la liste par ex [0,1,2,3] + [4] car la nouvelle abeille est la cinquième
+                    # si le temps ajouter ici le système de déplacement automatique / IA
             # verif de fin de tour
             fin_de_tour(joueur)
     # Fermeture fenêtre
     g.fermerFenetre()
+
+
 def get_couleur_map(x:int,y:int)->str:
     """
     Docstring for get_couleur_map
@@ -299,7 +309,7 @@ def stat_part(joueur:backend.joueur):
     g.afficherTexte(f'Créer des abeilles | coût : {config.prix_abeille}',config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*5-config.sub_margin_btn,'black',20)
     for x in range(0,3):
         Nom = ['Ouvrière','Bourdon','Eclaireuse']
-        if joueur.nectar >= 3 and backend.ya_quelqun(backend.get_spawn_coor(joueur.id+1,1),backend.get_spawn_coor(joueur.id+1,2)): # pyright: ignore[reportArgumentType] -> voir definition fonction mode 1 et 2 ne renvoie que des int et non des tuple
+        if joueur.nectar >= 3 and not backend.ya_quelqun(backend.get_spawn_coor(joueur.id+1,1),backend.get_spawn_coor(joueur.id+1,2)): # pyright: ignore[reportArgumentType] -> voir definition fonction mode 1 et 2 ne renvoie que des int et non des tuple
             color_creer :str = 'dark green'
         else:
             color_creer :str = 'red'

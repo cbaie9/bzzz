@@ -265,6 +265,9 @@ def get_list_deplacement(x :int, y:int,mode:int =1 ) -> list[tuple[int,int]]:
     Docstring for get_list_deplacement
     - Renvoie une liste preliminaire pour l'affichage des case déplacable
 
+    Mode = 1 Renvoie la position du joueur dans la liste ( Par défault )
+    Mode = {autre nombre que 1} : Ne renvoie pas la position du joueur mais uniquement les case autour
+
     :param x: Position actuelle du joueur ( axe x )
     :type x: int
     :param y: Position actuelle du joueur ( axe y )
@@ -350,6 +353,15 @@ def Butinage(abeille:abeille,x:int,y:int)-> int:
     else :
         return 0
 def get_list_abeille(joueur :joueur)-> list[abeille] | list[int]:
+    """
+    Docstring for get_list_abeille
+    Renvoie la liste des abeille du joueur ( non utilisé dans le code mais la )
+    
+    :param joueur: Description
+    :type joueur: joueur
+    :return: Description
+    :rtype: list[abeille] | list[int]
+    """
     if 1<=joueur.id<=4:
         output = joueur.list_abeille
     else:
@@ -434,6 +446,7 @@ def creation_abeille(joueur:joueur,classe:str) :
     :param classe: bourdon éclaireuse ou l'autre
     :type classe: str
     """
+    print("#çamarchepas mais azy")
     x_spawn = int(get_spawn_coor(joueur.id+1,1))  # type: ignore # voir defininition fonction pour les erreur 
     y_spawn = int(get_spawn_coor(joueur.id+1,2))    # type: ignore
     #             return None #on retourne None afin de pouvoir vérifier certaines conditions dans le lib_graphisme lors de la création d'une nouvelle abeille 
@@ -444,7 +457,51 @@ def creation_abeille(joueur:joueur,classe:str) :
         
     else :
         return None # s'il n'a pas suffisemment de nectar 
-   
+def map_info(x:int,y:int)->list[int|str]:
+    """
+    Docstring for ya_quelqun
+    -> Renvoie les information de l'abeille en fonction si une abeille se trouve sur la position demandé
+
+    
+    le renvoie sous la forme [equipe,classe]
+    :param x: Position en l'axe x
+    :type x: int
+    :param y: Position en l'axe y
+    :type y: int
+    :return: Oui s'il y a une entité sur la case, l'inverse sinon
+    :rtype: bool
+    """
+    import lib_graphisme
+    for forx in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[forx].list_abeille # liste d'abeille pour le joueur actuelle
+        for fory in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            if liste_joueur_actuelle[fory].x == x and liste_joueur_actuelle[fory].y == y:
+                return [liste_joueur_actuelle[fory].equipe,liste_joueur_actuelle[fory].classe]
+    return [0,'rien']
+def escarmouche(joueur:joueur):
+    escar = False
+    for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+        for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            liste_position_autour = get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,2)
+            opposant = 0
+            info_ab_opposant :list[str]= []
+            info_equipe_opposant :list[int]= []
+            for xl in range(len(liste_position_autour)-1):
+                tuple_xy = liste_position_autour[xl]
+                if ya_quelqun(tuple_xy[0],tuple_xy[1]):
+                    # escarmouche confirmée : acquisition des information préliminaire (équipe+classe)
+                    escar = True    
+                    opposant += 1
+                    temp_info :list[int|str] = map_info(tuple_xy[0],tuple_xy[1])
+                    if not temp_info[1] == 'rien':
+                        if temp_info[0] not in info_equipe_opposant:
+                            info_equipe_opposant.append(temp_info[0]) # pyright: ignore[reportArgumentType]
+                        if temp_info[1] not in info_ab_opposant:
+                            info_ab_opposant.append(temp_info[1])  # pyright: ignore[reportArgumentType]
+                    
+    if escar:
+        pass
 
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 

@@ -492,6 +492,9 @@ def get_abeille_pos(xv:int,yv:int)->abeille|None:
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
             if liste_joueur_actuelle[y].x == xv and liste_joueur_actuelle[y].y == yv:
                 return liste_joueur_actuelle[y]
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 

@@ -34,6 +34,7 @@ class abeille:
             nectar_max = 1
         self.force = force
         self.nectar_max = nectar_max
+        self.FE = self.force // get_oppo(get_list_deplacement(self.x,self.y,2))
 class joueur:
     def __init__(self, list_abeille:list[abeille]) -> None:
         self.list_abeille = list_abeille # liste d'abeille des joueurs
@@ -398,6 +399,100 @@ def ya_quelqun(x:int,y:int)->bool:
             if liste_joueur_actuelle[fory].x == x and liste_joueur_actuelle[forx].y == y:
                 return True
     return False
+<<<<<<< Updated upstream
+=======
+def creation_abeille(joueur:joueur,classe:str) :
+    """
+    Docstring for creation_abeille
+    -> ajoute une nouvelle abeille à la liste du joueur passé en paramètre si la case du spawn n'est pas déjà occupée et qu'il possède suffisemment de nectar
+
+    :param joueur: joueur
+    :type joueur: joueur
+    :param classe: bourdon éclaireuse ou l'autre
+    :type classe: str
+    """
+    print("#çamarchepas mais azy")
+    x_spawn = int(get_spawn_coor(joueur.id+1,1))  # type: ignore # voir defininition fonction pour les erreur 
+    y_spawn = int(get_spawn_coor(joueur.id+1,2))    # type: ignore
+    #             return None #on retourne None afin de pouvoir vérifier certaines conditions dans le lib_graphisme lors de la création d'une nouvelle abeille 
+    if not ya_quelqun(x_spawn,y_spawn) : #si l'espace n'est pas occupé 
+        if joueur.nectar >= config.prix_abeille : #si le joueur possède suffisemment de nectar
+            print(f"[fonction creation abeille]: retour abeille valide-> sortie de la fonction")
+            return  abeille(x_spawn, y_spawn, joueur.id+1,classe) #on créer une nouvelle entrée de la classe abeille, on fait joueur.id +1 car c'est {0,1,2,3} != {1,2,3,4}
+        
+    else :
+        return None # s'il n'a pas suffisemment de nectar 
+def map_info(x:int,y:int)->list[int|str]:
+    """
+    Docstring for ya_quelqun
+    -> Renvoie les information de l'abeille en fonction si une abeille se trouve sur la position demandé
+
+    
+    le renvoie sous la forme [equipe,classe]
+    :param x: Position en l'axe x
+    :type x: int
+    :param y: Position en l'axe y
+    :type y: int
+    :return: Oui s'il y a une entité sur la case, l'inverse sinon
+    :rtype: bool
+    """
+    import lib_graphisme
+    for forx in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[forx].list_abeille # liste d'abeille pour le joueur actuelle
+        for fory in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            if liste_joueur_actuelle[fory].x == x and liste_joueur_actuelle[fory].y == y:
+                return [liste_joueur_actuelle[fory].equipe,liste_joueur_actuelle[fory].classe]
+    return [0,'rien']
+def escarmouche():
+    escar = False
+    opposant = 1
+    liste_FE = []
+    for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+        for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            liste_position_autour = get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,2)
+            info_ab_opposant :list[str]= []
+            info_equipe_opposant :list[int]= []
+            for xl in range(len(liste_position_autour)-1):
+                # verification des position autour des abeille
+                tuple_xy = liste_position_autour[xl]
+                if ya_quelqun(tuple_xy[0],tuple_xy[1]):
+                    temp_info :list[int|str] = map_info(tuple_xy[0],tuple_xy[1])
+                    # verification si l'abeille n'est pas allié et qu'elle n'est pas déjà KO
+                    if (not temp_info[0] == lib_graphisme.Players[x].id) and liste_joueur_actuelle[y].etat == True:
+                        # escarmouche confirmée : acquisition des information préliminaire (équipe+classe)
+                        print("[fonction escarmouch]: préparation de l'escarmouche")
+                        abeille_ennemis = get_abeille_pos(tuple_xy[0],tuple_xy[1])
+                        if not temp_info[1] == 'rien':
+                            escar = True   
+                            if temp_info[0] not in info_equipe_opposant:
+                                info_equipe_opposant.append(temp_info[0]) # pyright: ignore[reportArgumentType]
+                            if temp_info[1] not in info_ab_opposant:
+                                info_ab_opposant.append(temp_info[1])  # pyright: ignore[reportArgumentType]
+                        if isinstance(abeille_ennemis,abeille):
+                            liste_FE.append(abeille_ennemis.FE)
+                        else :
+                            print("escarmouche annulé : info non conforme par map_info()")
+                if escar:
+                    random_number = random.random()
+                    FE_self = liste_joueur_actuelle[y].force // get_oppo(get_list_deplacement)  # calcul FE personnel
+
+                    
+
+def get_oppo(liste:list[tuple[int,int]])->int:
+    oppo = 0
+    for liste_autour in range(len(liste)-1):
+        tuple_xy = liste[liste_autour]
+        if ya_quelqun(tuple_xy[0],tuple_xy[1]):
+            oppo += 1
+    return oppo
+def get_abeille_pos(xv:int,yv:int)->abeille|None:
+    for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+        for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            if liste_joueur_actuelle[y].x == xv and liste_joueur_actuelle[y].y == yv:
+                return liste_joueur_actuelle[y]
+>>>>>>> Stashed changes
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 
 map = creation_matrice_map()

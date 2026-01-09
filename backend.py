@@ -3,8 +3,7 @@
 import config 
 from random import choice
 import random
-
-
+import lib_graphisme
 
 # setup des classe système 
 class abeille:
@@ -14,6 +13,7 @@ class abeille:
         self.equipe :int = equipe # Numero de l'équipe de l'abeille (Entre 1 et 4 compris)
         self.nectar :int = 0 # Nombre de nectar que porte l'abeille actuelle 
         self.classe :str = classe # Classe de l'abeille (Esclaireuse etc)
+        self.compteur_KO = 0
         self.etat :bool = True # True = Vivant | False = KO
         if equipe == 1:
             self.id :int = config.id_actuelle_J1 # id de l'abeille UNIQUE 
@@ -47,12 +47,13 @@ class abeille:
             nectar_max = 1
         self.force = force
         self.nectar_max = nectar_max
+        self.FE :int = 0 
 class joueur:
     def __init__(self, list_abeille:list[abeille]) -> None:
         self.list_abeille = list_abeille # liste d'abeille des joueurs
         self.id = config.id_actuelle_joueur
         config.id_actuelle_joueur += 1
-        self.nectar = 3
+        self.nectar = config.nectar_initial
 class clic_custom:
     def __init__(self, x:int,y:int) -> None:
         self.x = x # Position x du clic
@@ -451,7 +452,7 @@ def creation_abeille(joueur:joueur,classe:str) :
     y_spawn = int(get_spawn_coor(joueur.id+1,2))    # type: ignore
     #             return None #on retourne None afin de pouvoir vérifier certaines conditions dans le lib_graphisme lors de la création d'une nouvelle abeille 
     if not ya_quelqun(x_spawn,y_spawn) : #si l'espace n'est pas occupé 
-        if joueur.nectar >= config.prix_abeille : #si le joueur possède suffisemment de nectar
+        if joueur.nectar >= config.cout_ponte : #si le joueur possède suffisemment de nectar
             print(f"[fonction creation abeille]: retour abeille valide-> sortie de la fonction")
             return  abeille(x_spawn, y_spawn, joueur.id+1,classe) #on créer une nouvelle entrée de la classe abeille, on fait joueur.id +1 car c'est {0,1,2,3} != {1,2,3,4}
         
@@ -478,31 +479,75 @@ def map_info(x:int,y:int)->list[int|str]:
             if liste_joueur_actuelle[fory].x == x and liste_joueur_actuelle[fory].y == y:
                 return [liste_joueur_actuelle[fory].equipe,liste_joueur_actuelle[fory].classe]
     return [0,'rien']
-def escarmouche(joueur:joueur):
+def escarmouche():
     escar = False
+    liste_FE = []
+    Fe_oppo = 0
     for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
         liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
             liste_position_autour = get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,2)
-            opposant = 0
-            info_ab_opposant :list[str]= []
-            info_equipe_opposant :list[int]= []
             for xl in range(len(liste_position_autour)-1):
+                # verification des position autour des abeille
                 tuple_xy = liste_position_autour[xl]
                 if ya_quelqun(tuple_xy[0],tuple_xy[1]):
-                    # escarmouche confirmée : acquisition des information préliminaire (équipe+classe)
-                    escar = True    
-                    opposant += 1
-                    temp_info :list[int|str] = map_info(tuple_xy[0],tuple_xy[1])
-                    if not temp_info[1] == 'rien':
-                        if temp_info[0] not in info_equipe_opposant:
-                            info_equipe_opposant.append(temp_info[0]) # pyright: ignore[reportArgumentType]
-                        if temp_info[1] not in info_ab_opposant:
-                            info_ab_opposant.append(temp_info[1])  # pyright: ignore[reportArgumentType]
-                    
-    if escar:
-        pass
+                    abeille_ennemis = get_abeille_pos(tuple_xy[0],tuple_xy[1]) # On obtient l'abeille au point où on a detecté via ya_qqun() qui l'y avais un avais une abeille
+                    # verification si l'abeille n'est pas allié et qu'elle n'est pas déjà KO
+                    if isinstance(abeille_ennemis,abeille):
+                        if (not abeille_ennemis.equipe-1 == lib_graphisme.Players[x].id) and liste_joueur_actuelle[y].etat == True: # Verication si l'abeille est ennemis et notre abeille en état de combat
+                            # escarmouche confirmée : acquisition des information préliminaire (FE)
+                            print("[fonction escarmouche]: préparation de l'escarmouche")
+                            escar = True
+                            liste_FE :list[int]
+                            liste_FE.append(abeille_ennemis.FE) # pyright: ignore[reportUnknownMemberType] Liser la ligne du dessus enft
+                    else :
+                            print("escarmouche annulé : abeille non trouvé par get_abeille_pos() ")
+                if escar:
+                    random_number = random.random()
+                    for sumx in range(len(liste_FE)):
+                        Fe_oppo += liste_FE[sumx] # calcul FE opposant
+                    chance_equive = liste_joueur_actuelle[y].force / (liste_joueur_actuelle[y].force + Fe_oppo)
+                    if random_number<chance_equive:
+                        print(f"Le joueur {x} a reussi l'esquive")
+                        escar = False
+                    else : 
+                        print(f"Le joueur {x} à rate son esquive il sera ko pour {config.Time_KO} tours")
+                        liste_joueur_actuelle[y].compteur_KO = config.Time_KO
+                        liste_joueur_actuelle[y].etat = False
+                        escar = False
+def get_oppo(liste:list[tuple[int,int]])->int:
+    oppo = 0
+    for liste_autour in range(len(liste)-1):
+        tuple_xy = liste[liste_autour]
+        if ya_quelqun(tuple_xy[0],tuple_xy[1]):
+            oppo += 1
+    return oppo
+def get_abeille_pos(xv:int,yv:int)->abeille|None:
+    for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+        for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            if liste_joueur_actuelle[y].x == xv and liste_joueur_actuelle[y].y == yv:
+                return liste_joueur_actuelle[y]
 
+def update_abeille():
+    for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
+        liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+        for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+            div = get_oppo(get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,2))
+            if not div == 0:
+                liste_joueur_actuelle[y].FE = liste_joueur_actuelle[y].force // div
+            else:
+                liste_joueur_actuelle[y].FE = liste_joueur_actuelle[y].force
+            retabli = False
+            if not liste_joueur_actuelle[y].etat:
+                liste_joueur_actuelle[y].compteur_KO -= 1
+                retabli = True
+            if liste_joueur_actuelle[y].compteur_KO == 0:
+                liste_joueur_actuelle[y].etat = True
+                if retabli:
+                    print(f"Fin de Tour : L'abeille {y} du joueur {x+1} (classe : {liste_joueur_actuelle[y].classe}) peut maintenant de nouveau jouer")
+            else:
+                print(f"Il reste plus que {liste_joueur_actuelle[y].compteur_KO} avant que l'abeille {y} du joueur {x+1} puissent rejouer")
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 
 map = creation_matrice_map()

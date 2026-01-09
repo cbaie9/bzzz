@@ -69,7 +69,7 @@ def start():
                     elif 1 <= retour_btn  <= 3:
                         classe_str = ['ouvrière','bourdon','eclaireuse']
                         joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
-                        joueur.nectar -= config.prix_abeille
+                        joueur.nectar -= config.cout_ponte
                         texture_ab = get_image_sprite(joueur.id+1,classe_str[retour_btn-1])
                         List_img[joueur.id].append(g.afficherImage(Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].x*config.taille_carre_x,Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].y*config.taille_carre_x,texture_ab))
                         afficher_toutes_les_abeilles(List_img)
@@ -135,7 +135,7 @@ def start():
                     elif 1 <= retour_btn  <= 3:
                         classe_str = ['ouvrière','bourdon','eclaireuse']
                         joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
-                        joueur.nectar -= config.prix_abeille
+                        joueur.nectar -= config.cout_ponte
                         texture_ab = get_image_sprite(joueur.id+1,classe_str[retour_btn-1])
                         List_img[joueur.id].append(g.afficherImage(Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].x*config.taille_carre_x,Players[joueur.id].list_abeille[len(joueur.list_abeille)-1].y*config.taille_carre_x,texture_ab))
                         afficher_toutes_les_abeilles(List_img)
@@ -306,7 +306,7 @@ def stat_part(joueur:backend.joueur):
     g.dessinerLigne(((config.xmax)-config.size_btn_quit)+config.margin_cross,config.size_btn_quit-config.margin_cross,config.xmax-config.margin_cross,config.margin_cross,'white smoke')
     # btn créer abeille :
     g.dessinerLigne(config.xmax_game,(config.ymax_game//8)*5-config.sub_margin_btn-20,config.xmax,(config.ymax_game//8)*5-config.sub_margin_btn-20,'black')
-    g.afficherTexte(f'Créer des abeilles | coût : {config.prix_abeille}',config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*5-config.sub_margin_btn,'black',20)
+    g.afficherTexte(f'Créer des abeilles | coût : {config.cout_ponte}',config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*5-config.sub_margin_btn,'black',20)
     for x in range(0,3):
         Nom = ['Ouvrière','Bourdon','Eclaireuse']
         if joueur.nectar >= 3 and not backend.ya_quelqun(backend.get_spawn_coor(joueur.id+1,1),backend.get_spawn_coor(joueur.id+1,2)): # pyright: ignore[reportArgumentType] -> voir definition fonction mode 1 et 2 ne renvoie que des int et non des tuple
@@ -384,6 +384,8 @@ def fin_de_tour(joueur:backend.joueur):
 
     
     """
+    backend.update_abeille()
+    backend.escarmouche()
     #print("------------------------")
     #backend.affichage_matrice(backend.map)
     # detection de fin de jeu

@@ -16,6 +16,7 @@ taille_spawn_y :int = round(sqrt(nb_carre_y))
 # --------------------------------------
 # Configuration des limite de fin de jeu
 time_out = 300 # nb de tour max 
+Time_KO = 5
 tour_actuel = 0 # nombre de tour actuelle
 # ----------------------------------
 # Configuration de l'interface de graphique
@@ -39,7 +40,7 @@ id_actuelle_J2 :int = 0
 id_actuelle_J3 :int = 0
 id_actuelle_J4 :int = 0
 id_actuelle_joueur :int = 0
-prix_abeille :int =3
+cout_ponte:int =3
 # voir backend pour les joueur
 # ----------------------------
 # Gestion des fleurs

@@ -84,7 +84,7 @@ def test_yaquelqun()->bool:
         print(f"Le test unitaire de la fonction ya quelqu'un à été reussi")
     else:
         assert("La Test Unitaire de la fonction ya quelqu'un à échoué a reconnaitre le joueur test")
-    
+    lib_graphisme.Players.remove(Joueur_test)
     return test1
 
 
@@ -106,18 +106,20 @@ def test_case_valide()->bool:
     test2 = False
     test3 = False
     test4 = False
-    test5 = False
+    #test5 = False
     # test 1 : deplacement sur un case neutre
     # utilsation de l'abeille 0 du joueur 1 | on configure la position de l'abeille au préalabre
     lib_graphisme.Players[1].list_abeille[0].x = config.nb_carre//2
     lib_graphisme.Players[1].list_abeille[0].y = config.nb_carre//2
     lib_graphisme.Players[1].list_abeille[0].x_old = (config.nb_carre//2)-1
     lib_graphisme.Players[1].list_abeille[0].y_old = config.nb_carre//2
+    lib_graphisme.Players[1].list_abeille[0].etat = True
+    lib_graphisme.Players[1].list_abeille[0].classe = "debug"
     if backend.case_valide(lib_graphisme.Players[1].list_abeille[0]):
         test1 = True
         print("Le test unitaire 1 de case valide à été reussi")
     else:
-        print("Le test unitaire 1 de case valide à échoué")
+        print(f"Le test unitaire 1 de case valide à échoué | {lib_graphisme.Players[1].list_abeille[0].x},{lib_graphisme.Players[1].list_abeille[0].y},{lib_graphisme.Players[1].list_abeille[0].classe},{lib_graphisme.Players[1].list_abeille[0].equipe},{lib_graphisme.Players[1].list_abeille[0].x_old},{lib_graphisme.Players[1].list_abeille[0].y_old}")
     # test 2 : Déplacement sur un case du spawn du joueur
     # utilsation de l'abeille 0 du joueur 1 | on configure la position de l'abeille au préalabre
     lib_graphisme.Players[1].list_abeille[0].x = 1
@@ -221,10 +223,8 @@ def test_get_list_deplacement()->bool:
     else:
         print("Le test 5 unitaire de la fonction get_list_deplacement à échoué")
     return test1 and test2 and test3 and test4 and test5
-#test_map()
-#test_yaquelqun()
-#test_case_valide()
-test_get_list_deplacement()
+if test_map() and test_yaquelqun() and test_case_valide() and test_get_list_deplacement():
+    print("Tous les Test unitaire ont été reussi")
 
 
     

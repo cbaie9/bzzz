@@ -157,9 +157,74 @@ def test_case_valide()->bool:
     else:
         print("Le test unitaire 4 de case valide à échoué")
     return test1 and test2 and test3 and test4
+def test_get_list_deplacement()->bool:
+    """
+    Docstring for test_get_list_deplacement
+
+    Test pour la fonction get_list_deplacement
+
+    Test 1 : Test de la longueur du retour de la fonction sur un endroit vide , mode 1
+    Test 2 : Test de la longueur du retour de la fonction sur un endroit vide , mode 2
+    Test 3 : Test de la longueur du retour de la fonction sur un endroit vide , mode 3
+    Endroit Vide -> Centre de la map 
+    Test 4 : Test de la longueur du retour de la fonction sur un endroit comportant une abeille , mode 1
+    Test 5 : Test de la longueur du retour de la fonction sur un endroit comportant une abeille , mode 2
+    
+    :return: Description
+    :rtype: bool
+    """
+    test1 = False
+    test2 = False
+    test3 = False
+    test4 = False
+    test5 = False
+    # Test 1
+    liste_test1 = backend.get_list_deplacement(config.nb_carre//2,config.nb_carre//2,mode=1)
+    if len(liste_test1) == 9:
+        test1 = True
+        print("Le test 1 unitaire de la fonction get_list_deplacement à été reussit")
+    else:
+        print("Le test 1 unitaire de la fonction get_list_deplacement à échoué")
+    # test 2
+    liste_test2 = backend.get_list_deplacement(config.nb_carre//2,config.nb_carre//2,mode=2)
+    if len(liste_test2) == 5:
+        test2 = True
+        print("Le test 2 unitaire de la fonction get_list_deplacement à été reussit")
+    else:
+        print("Le test 2 unitaire de la fonction get_list_deplacement à échoué")
+    
+    # Test 3
+    liste_test3 = backend.get_list_deplacement(config.nb_carre//2,config.nb_carre//2,mode=3)
+    if len(liste_test3) == 8:
+        test3 = True
+        print("Le test 3 unitaire de la fonction get_list_deplacement à été reussit")
+    else:
+        print("Le test 3 unitaire de la fonction get_list_deplacement à échoué")
+    # Test 4
+    lib_graphisme.Players[1].list_abeille[0].x = (config.nb_carre//2)-1
+    lib_graphisme.Players[1].list_abeille[0].y = config.nb_carre//2
+    liste_test4 = backend.get_list_deplacement(config.nb_carre//2,config.nb_carre//2,mode=1)
+    
+    if len(liste_test4) == 8:
+        test4 = True
+        print("Le test 4 unitaire de la fonction get_list_deplacement à été reussit")
+    else:
+        print(f"Le test 4 unitaire de la fonction get_list_deplacement à échoué")
+    # Test 5
+    lib_graphisme.Players[1].list_abeille[0].x = (config.nb_carre//2)-1
+    lib_graphisme.Players[1].list_abeille[0].y = config.nb_carre//2
+    liste_test5 = backend.get_list_deplacement(config.nb_carre//2,config.nb_carre//2,mode=2)
+    
+    if len(liste_test5) == 4:
+        test5 = True
+        print("Le test 5 unitaire de la fonction get_list_deplacement à été reussit")
+    else:
+        print("Le test 5 unitaire de la fonction get_list_deplacement à échoué")
+    return test1 and test2 and test3 and test4 and test5
 #test_map()
 #test_yaquelqun()
-test_case_valide()
+#test_case_valide()
+test_get_list_deplacement()
 
 
     

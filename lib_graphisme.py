@@ -51,7 +51,9 @@ def start():
         for joueur in Players:
             # Gestion du tour multi-abeilles
             abeilles_restantes = [i for i in range(len(joueur.list_abeille))] #création de la liste qui contient toutes les abeilles du joueur actuel sous forme [0,1,2] qui correspondent aux indices des abeilles
-            
+            for xlr in range(len(joueur.list_abeille)):
+                if joueur.list_abeille[xlr].etat == False:
+                    abeilles_restantes.remove(xlr) # enlevement des abeille ko de la liste d'abeille restant
             while len(abeilles_restantes) > 0 and config.play: #tant qu'il y a des abeilles dans la liste / tant que le bouton stop croix rouge n'est pas cliqué
                 afficher_toutes_les_abeilles(List_img)
                 stat_part(joueur) # actulisation des statistique pour le joueur actuelle
@@ -78,13 +80,13 @@ def start():
                     # si le temps ajouter ici le système de déplacement automatique / IA
                     x_clic_formate,y_clic_formate = clic_formate(clic_custom) # formatage du clic /case
                     for i in abeilles_restantes: #on parcourt tout les "id" des abeilles
-                        if joueur.list_abeille[i].x == x_clic_formate and joueur.list_abeille[i].y == y_clic_formate: #si l'abeille se trouve sur la case sur laquelle on vient de cliquer
+                        if joueur.list_abeille[i].x == x_clic_formate and joueur.list_abeille[i].y == y_clic_formate and joueur.list_abeille[i].etat: #si l'abeille se trouve sur la case sur laquelle on vient de cliquer
                             abeille_selectionnee = i #l'abeille sélectionnée est l'indice par ex si on sélectionne l'abeille 0 alors cette variable = 0                             selection = False
                             selection = False #on a finit la sélection on peut passer au reste
                             break
                 if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
                         break # sortie de la boucle prématurée car le bouton de fermeture à été appuiyée
-                print(f"########### \n fin selection : \n abeille selectionne :{abeille_selectionnee} \n ########")
+                print(f"########### \n fin selection : \n abeille selectionne :{abeille_selectionnee} | x: {joueur.list_abeille[abeille_selectionnee].x} | y: {joueur.list_abeille[abeille_selectionnee].y} \n ########")
                 #          ICI
                 # ---------------------- # 
                 dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee])  # affichage des déplacement possible par le joueur
@@ -98,6 +100,7 @@ def start():
                 joueur.list_abeille[abeille_selectionnee].x_old = joueur.list_abeille[abeille_selectionnee].x #on actualise les coordonnées de l'abeille
                 joueur.list_abeille[abeille_selectionnee].y_old = joueur.list_abeille[abeille_selectionnee].y # idem
                 joueur.list_abeille[abeille_selectionnee].x, joueur.list_abeille[abeille_selectionnee].y = clic_formate(clic_custom) # changement -> mtn dans fonction dédié pour éviter la répétition
+                print(f"########### \n fin déplacement : \n abeille selectionne :{abeille_selectionnee} | x: {joueur.list_abeille[abeille_selectionnee].x} | y: {joueur.list_abeille[abeille_selectionnee].y} \n ########")
                 #---------
                 # est-ce que la case choisi est la valide
                 #debug position# print(joueur.list_abeille[abeille_selectionnee].x,joueur.list_abeille[abeille_selectionnee].y)
@@ -116,9 +119,7 @@ def start():
                     abeilles_restantes.remove(abeille_selectionnee) #on retire l'abeille qui vient d'être faite 
                 else :
                     # colision btn stat
-                    print("entree")
                     retour_btn = bouton_stat(clic_custom,joueur) # deplacer dans fonction dédié | clic custom = classe pour éviter les pbm de typpage
-                    print(f"retour_btn {retour_btn}")
                     #
                     # si le temps ajouter ici le système de déplacement automatique / IA
                     # --- ICI --- #
@@ -143,7 +144,26 @@ def start():
                         abeilles_restantes.append(len(joueur.list_abeille)-1)#on rajoute l'indice de l'abeille à la liste par ex [0,1,2,3] + [4] car la nouvelle abeille est la cinquième
                     # si le temps ajouter ici le système de déplacement automatique / IA
             # verif de fin de tour
+            backend.update_abeille()
+            list_ko = backend.escarmouche()
+            for xlist_escar in range(len(list_ko)):
+                tuple_ko :tuple[int,int] = list_ko[xlist_escar]
+                Players[tuple_ko[0]].list_abeille[tuple_ko[1]].compteur_KO = config.Time_KO
+                Players[tuple_ko[0]].list_abeille[tuple_ko[1]].etat = False
+                if tuple_ko[1] in abeilles_restantes:
+                    abeilles_restantes.remove(tuple_ko[1])
             fin_de_tour(joueur)
+            # info non je peut pas bouger ça dans une fonction ça marche pas dans ma config
+            for x in range(len(Players)): # for pour le nombre de joueur
+                liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
+                for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
+                    if not liste_joueur_actuelle[y].etat:
+                        print(f"{x},{y} false")
+                        texture = get_image_sprite(liste_joueur_actuelle[y].equipe,liste_joueur_actuelle[y].classe,liste_joueur_actuelle[y].etat)
+                        objgrap = g.afficherImage(liste_joueur_actuelle[y].x*config.taille_carre_x,liste_joueur_actuelle[y].y*config.taille_carre_x,texture)
+                        if not objgrap == List_img[x][y]:
+                            List_img[x][y] = objgrap # met à jour l'image de toute les abeille 
+
     # Fermeture fenêtre
     g.fermerFenetre()
 
@@ -339,7 +359,12 @@ def dessiner_case_deplacement(abeille:backend.abeille, ecrire:bool = True):
     :type x_old: int
     :ecrire: Est-ce que les programme affiche ou supprime les cases | Booléen
     """
-    liste = backend.get_list_deplacement(abeille.x,abeille.y)
+    print(abeille.classe)
+    if abeille.classe == "eclaireuse":
+        mode = 1
+    else:
+        mode = 2
+    liste = backend.get_list_deplacement(abeille.x,abeille.y,mode)
     for x_list,y_list in liste:
             if backend.case_valide(abeille):
                 if ecrire:
@@ -384,8 +409,8 @@ def fin_de_tour(joueur:backend.joueur):
 
     
     """
-    backend.update_abeille()
-    backend.escarmouche()
+    
+    
     #print("------------------------")
     #backend.affichage_matrice(backend.map)
     # detection de fin de jeu
@@ -427,7 +452,7 @@ def afficher_toutes_les_abeilles(liste_img:list[list[tke.ObjetGraphique]]):
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
             g.afficherImage(liste_joueur_actuelle[y].x*config.taille_carre_x,liste_joueur_actuelle[y].y*config.taille_carre_y,get_image_sprite(liste_joueur_actuelle[y].equipe,liste_joueur_actuelle[y].classe))
 
-def get_image_sprite(equipe:int,class_ab:str)->str:
+def get_image_sprite(equipe:int,class_ab:str, etat:bool=True)->str:
     """
     Docstring for get_image_sprite
     Retourne le chemin direct des texture des abeilles de tous type sous forme de 'path'
@@ -439,35 +464,45 @@ def get_image_sprite(equipe:int,class_ab:str)->str:
     :return: Description
     :rtype: str
     """
-    output = './image/abeille_menu.png'
-    if equipe == 1:
+    output = './image/abeille_menu.png' # par défault si si pbm
+    if etat:
+        if equipe == 1:
+            if class_ab == "ouvrière":
+                output = "./image/abeilles/ouvrière/vert.png"
+            elif class_ab == "eclaireuse":
+                output = "./image/abeilles/eclaireuse/ec_vert.png"
+            elif class_ab == "bourdon":
+                output = "./image/abeilles/bourdon/bd_vert.png"
+        elif equipe == 2:
+            if class_ab == "ouvrière":
+                output = "./image/abeilles/ouvrière/violet.png"
+            elif class_ab == "eclaireuse":
+                output = "./image/abeilles/eclaireuse/ec_violet.png"
+            elif class_ab == "bourdon":
+                output = "./image/abeilles/bourdon/bd_violet.png"
+        elif equipe == 3:
+            if class_ab == "ouvrière":
+                output = "./image/abeilles/ouvrière/bleu.png"
+            elif class_ab == "eclaireuse":
+                output = "./image/abeilles/eclaireuse/ec_bleu.png"
+            elif class_ab == "bourdon":
+                output = "./image/abeilles/bourdon/bd_bleu.png"
+        elif equipe == 4:
+            if class_ab == "ouvrière":
+                output = "./image/abeilles/ouvrière/rouge.png"
+            elif class_ab == "eclaireuse":
+                output = "./image/abeilles/eclaireuse/ec_rouge.png"
+            elif class_ab == "bourdon":
+                output = "./image/abeilles/bourdon/bd_rouge.png"
+    else: # abeille KO
         if class_ab == "ouvrière":
-            output = "./image/abeilles/ouvrière/vert.png"
+            output = "./image/abeilles/ouvrière/down.png"
         elif class_ab == "eclaireuse":
-            output = "./image/abeilles/eclaireuse/ec_vert.png"
+            output = "./image/abeilles/eclaireuse/ec_down.png"
         elif class_ab == "bourdon":
-            output = "./image/abeilles/bourdon/bd_vert.png"
-    elif equipe == 2:
-        if class_ab == "ouvrière":
-            output = "./image/abeilles/ouvrière/violet.png"
-        elif class_ab == "eclaireuse":
-            output = "./image/abeilles/eclaireuse/ec_violet.png"
-        elif class_ab == "bourdon":
-            output = "./image/abeilles/bourdon/bd_violet.png"
-    elif equipe == 3:
-        if class_ab == "ouvrière":
-            output = "./image/abeilles/ouvrière/bleu.png"
-        elif class_ab == "eclaireuse":
-            output = "./image/abeilles/eclaireuse/ec_bleu.png"
-        elif class_ab == "bourdon":
-            output = "./image/abeilles/bourdon/bd_bleu.png"
-    elif equipe == 4:
-        if class_ab == "ouvrière":
-            output = "./image/abeilles/ouvrière/rouge.png"
-        elif class_ab == "eclaireuse":
-            output = "./image/abeilles/eclaireuse/ec_rouge.png"
-        elif class_ab == "bourdon":
-            output = "./image/abeilles/bourdon/bd_rouge.png"
+            output = "./image/abeilles/bourdon/bd_down.png"
+        else:
+            output = "./image/abeilles/bourdon/bd_down.png"
     return output
 def clic_formate(clic:backend.clic_custom):
     """

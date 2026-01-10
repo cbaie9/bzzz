@@ -67,11 +67,11 @@ def creation_matrice_perso() -> list[list[int]]:
     sortie : list 
 
     """
-    matrice_placement_perso = [[0 for i in range(config.nb_carre_x)] for j in range(config.nb_carre_y)] # pyright: ignore[reportUnusedVariable]
+    matrice_placement_perso = [[0 for _ in range(config.nb_carre_x)] for _ in range(config.nb_carre_y)] 
     return matrice_placement_perso
 
 
-def creation_matrice_map() -> list[list[int]] : 
+def creation_matrice_map(testing :bool = False) -> list[list[int]] : 
     """
     Créer la base de la matrice dans laquelle se trouve les emplacements des fleurs et des bases
     entrée : None 
@@ -79,7 +79,7 @@ def creation_matrice_map() -> list[list[int]] :
     """
     #------------------------------Création zones----------------------------------#
     #création d'une matrice assiocié à la carte vide
-    matrice_placement_map = [[0 for i in range(config.nb_carre_x)] for j in range(config.nb_carre_y)] # pyright: ignore[reportUnusedVariable]
+    matrice_placement_map = [[0 for _ in range(config.nb_carre_x)] for _ in range(config.nb_carre_y)]
     #création des spawn d'équipe    
     for x in range(1,5):
         if x == 1:
@@ -108,6 +108,8 @@ def creation_matrice_map() -> list[list[int]] :
             for j in range(range_y1,range_y2) : # pyright: ignore[reportPossiblyUnboundVariable] | range_y1 et range_y2 sont forcement defini sinon break
                 matrice_placement_map[i][j] = x
         #placement des fleurs à l'aide de la fonction "emplacement_fleurs(L_coord_case)"
+    if testing:
+        return matrice_placement_map
     L_emplacement_fleur = emplacement_fleurs(liste_coord_possible())
 
     for i in range(len(L_emplacement_fleur)) : 
@@ -181,7 +183,7 @@ def case_valide(abeille:abeille)-> bool:
     output2 = False
     compteur = 0
     #print(f"verif {abeille.equipe}, {abeille.x} | {abeille.y} {map[abeille.x][abeille.y]}")
-    if  abeille.x > 15: # empêche les déplacement dans la partie stat de l'écran
+    if  abeille.x > 15 and not abeille.etat: # empêche les déplacement dans la partie stat de l'écran ou que l'abeille soit KO
         return False
     if map[abeille.x][abeille.y] == 0 or (map[abeille.x][abeille.y] == abeille.equipe or (10 <= map[abeille.x][abeille.y] <= (10 + config.max_nectar) )):
         output = False
@@ -205,7 +207,7 @@ def case_valide(abeille:abeille)-> bool:
                     compteur += 1
         if compteur == 1 or compteur == 0:
             output2 = True
-    return output and output2
+    return output and output2 and abeille.etat
 def emplacement_fleurs(L_coord_case : list[tuple[int,int]]) : 
     """
     Retourne les coordonnées aléatoires pour le placement des fleurs
@@ -266,8 +268,9 @@ def get_list_deplacement(x :int, y:int,mode:int =1 ) -> list[tuple[int,int]]:
     Docstring for get_list_deplacement
     - Renvoie une liste preliminaire pour l'affichage des case déplacable
 
-    Mode = 1 Renvoie la position du joueur dans la liste ( Par défault )
-    Mode = {autre nombre que 1} : Ne renvoie pas la position du joueur mais uniquement les case autour
+    Mode = 1 Renvoie les position autour du joueur dans la liste ( Par défault ) -> deplacement pour les abeille de type eclaireuse
+    Mode = 2 Renvoie les position acessible par les bourdon et les ouvrière ( deplacement)
+    Mode = 3 : Ne renvoie pas la position du joueur mais uniquement les case autour ( liste escarmouche)
 
     :param x: Position actuelle du joueur ( axe x )
     :type x: int
@@ -279,25 +282,27 @@ def get_list_deplacement(x :int, y:int,mode:int =1 ) -> list[tuple[int,int]]:
     list_deplace :list[tuple[(int,int)]] = []
     # première colonne
     if x > 0 :
-        if y > 0:
+        if (y > 0 and (not mode == 2)) and (not ya_quelqun(x-1,y-1) or mode == 3):
             list_deplace.append(((x-1,y-1)))
-        list_deplace.append((x-1,y))
-        if y < config.nb_carre:
+        if (not ya_quelqun(x-1,y) or mode == 3):
+            list_deplace.append((x-1,y))
+        if y < config.nb_carre and (not mode ==2) and (not ya_quelqun(x-1,y+1) or mode == 3):
             list_deplace.append((x-1,y+1))
     # deuxième colonne
-    if y > 0:
+    if y > 0 and (not ya_quelqun(x,y-1) or mode == 3) :
         list_deplace.append((x,y-1))
-    if mode == 1:
+    if mode == 1 or mode == 2:
         list_deplace.append((x,y)) # deplacement sur place ( ne bouge pas)
-    if y+1 < config.nb_carre_y:
+    if y+1 < config.nb_carre_y and (not ya_quelqun(x,y-1) or mode == 3):
             #print(f"[debug]:[fonc:get_list_deplacement]:{y}, {config.nb_carre_y}")
             list_deplace.append((x,y+1))
     # trosième colonne
     if x+1 < config.nb_carre_x : 
-        if y > 0:
+        if y > 0 and (not mode == 2) and (not ya_quelqun(x+1,y-1) or mode == 3):
             list_deplace.append((x+1,y-1))
-        list_deplace.append((x+1,y))
-        if y+1 < config.nb_carre:
+        if (not ya_quelqun(x+1,y) or mode ==3):
+            list_deplace.append((x+1,y))
+        if (y+1 < config.nb_carre and (not mode == 2)) and (not ya_quelqun(x+1,y+1) or mode == 3):
             list_deplace.append((x+1,y+1))
     #print(f"[debug]:[fonc]:[get_list_deplacement]: {list_deplace}")
     return list_deplace
@@ -479,17 +484,21 @@ def map_info(x:int,y:int)->list[int|str]:
             if liste_joueur_actuelle[fory].x == x and liste_joueur_actuelle[fory].y == y:
                 return [liste_joueur_actuelle[fory].equipe,liste_joueur_actuelle[fory].classe]
     return [0,'rien']
-def escarmouche():
+def escarmouche()->list[tuple[int,int]]:
     escar = False
     liste_FE = []
     Fe_oppo = 0
+    print(f"[fonction escarmouche]:Verfication")
+    list_ko : list[tuple[int,int]] = []
     for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
         liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
-            liste_position_autour = get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,2)
+            print(f"ab {y} joueur {x+1}")
+            liste_position_autour = get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,3)
             for xl in range(len(liste_position_autour)-1):
                 # verification des position autour des abeille
                 tuple_xy = liste_position_autour[xl]
+                print(tuple_xy)
                 if ya_quelqun(tuple_xy[0],tuple_xy[1]):
                     abeille_ennemis = get_abeille_pos(tuple_xy[0],tuple_xy[1]) # On obtient l'abeille au point où on a detecté via ya_qqun() qui l'y avais un avais une abeille
                     # verification si l'abeille n'est pas allié et qu'elle n'est pas déjà KO
@@ -512,9 +521,9 @@ def escarmouche():
                         escar = False
                     else : 
                         print(f"Le joueur {x} à rate son esquive il sera ko pour {config.Time_KO} tours")
-                        liste_joueur_actuelle[y].compteur_KO = config.Time_KO
-                        liste_joueur_actuelle[y].etat = False
+                        list_ko.append((x,y))
                         escar = False
+    return list_ko
 def get_oppo(liste:list[tuple[int,int]])->int:
     oppo = 0
     for liste_autour in range(len(liste)-1):
@@ -533,7 +542,7 @@ def update_abeille():
     for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
         liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
-            div = get_oppo(get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,2))
+            div = get_oppo(get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,3))
             if not div == 0:
                 liste_joueur_actuelle[y].FE = liste_joueur_actuelle[y].force // div
             else:
@@ -547,7 +556,7 @@ def update_abeille():
                 if retabli:
                     print(f"Fin de Tour : L'abeille {y} du joueur {x+1} (classe : {liste_joueur_actuelle[y].classe}) peut maintenant de nouveau jouer")
             else:
-                print(f"Il reste plus que {liste_joueur_actuelle[y].compteur_KO} avant que l'abeille {y} du joueur {x+1} puissent rejouer")
+                print(f"Il reste plus que {liste_joueur_actuelle[y].compteur_KO} tour avant que l'abeille {y} du joueur {x+1} puissent rejouer")
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 
 map = creation_matrice_map()

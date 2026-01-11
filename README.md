@@ -2,7 +2,12 @@
 
 Cette repo [[github](https://github.com/cbaie9/bzzz)] est consacré au jeu BZZZ pour la saé 1.01 et 1.02
 
-## Pour démarré le jeu
+# Installation et lancement
+Prérequis
+#Python 3.8+
+#tkinter(inclus dans Python standard)
+#tkiteasy (fourni dans  'tkiteasy.py')
+## Pour démarrer le jeu
 
 Lancer le fichier start.py ou backend.py
 ```./start.py```
@@ -10,6 +15,8 @@ Lancer le fichier start.py ou backend.py
 ## But du jeu
 Le jeu est simple, récolter le plus de la moitié du nectar ou en avoir le plus à la fin des 300 tour de jeu
 Le jeu se joue a 4 joueurs qui tourne sur le jeu, chaque joueur commence avec une abeille éclaireuse sur son spawn et 10 nectar de base, ou il peut se deplacer en cliquant sur un abeille de son équipe sur une case bleu affiché ou en rose pour une fleur pour s'y deplace et y butiner automatiquement. Il faut faire attention aux abeille ennemis qui peuevent vous attaquer si se trouvent à coté et cela déclanchera une escarmouche où chaque abeille devra esquiver un attaque avec un probabilité en fonction de la force et du nombre d'opposant 
+
+
 
 # Documentation
 

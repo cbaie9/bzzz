@@ -183,7 +183,7 @@ def case_valide(abeille:abeille)-> bool:
     """
     output2 = False
     compteur = 0
-    print(f"verif {abeille.equipe}, {abeille.x} | {abeille.y}")
+    #print(f"verif {abeille.equipe}, {abeille.x} | {abeille.y}")
     if  ((not 0<=abeille.y<config.nb_carre)or (not 0<=abeille.y<config.nb_carre))  and (not abeille.etat) : # empêche les déplacement dans la partie stat de l'écran ou que l'abeille soit KO
         return False
     if map[abeille.x][abeille.y] == 0 or (map[abeille.x][abeille.y] == abeille.equipe or (10 <= map[abeille.x][abeille.y] <= (10 + config.max_nectar) )):

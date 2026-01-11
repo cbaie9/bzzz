@@ -123,6 +123,10 @@ def start():
                         afficher_toutes_les_abeilles(List_img)
                         print(len(List_img[joueur.id]))
                         abeilles_restantes.append(len(joueur.list_abeille)-1) #on rajoute l'indice de l'abeille à la liste par ex [0,1,2,3] + [4] car la nouvelle abeille est la cinquième
+                    elif retour_btn == 4:
+                        abeilles_restantes = []
+                        print("skip le tour")
+                        break
                     # si le temps ajouter ici le système de déplacement automatique / IA
                     x_clic_formate,y_clic_formate = clic_formate(clic_custom) # formatage du clic /case
                     for i in abeilles_restantes: #on parcourt tout les "id" des abeilles
@@ -130,7 +134,8 @@ def start():
                             abeille_selectionnee = i #l'abeille sélectionnée est l'indice par ex si on sélectionne l'abeille 0 alors cette variable = 0                             selection = False
                             selection = False #on a finit la sélection on peut passer au reste
                             break
-                if config.play == False: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
+                if config.play == False or len(abeilles_restantes)==0: # pyright: ignore[reportUnnecessaryComparison] -> faux car bouton_stat()
+                        print("break len2")
                         break # sortie de la boucle prématurée car le bouton de fermeture à été appuiyée
                 print(f"########### \n fin selection : \n abeille selectionne :{abeille_selectionnee} | x: {joueur.list_abeille[abeille_selectionnee].x} | y: {joueur.list_abeille[abeille_selectionnee].y} \n ########")
                 #          ICI
@@ -216,7 +221,7 @@ def start():
                         joueur.list_abeille[abeille_selectionnee].x = joueur.list_abeille[abeille_selectionnee].x_old
                     actualisation_background_map() 
                     afficher_abeille(joueur.list_abeille[abeille_selectionnee],List_img[joueur.id][abeille_selectionnee])
-                    if config.play == False:  # pyright: ignore[reportUnnecessaryComparison] -> Warning faux due à la foncion bouton_stat
+                    if config.play == False or len(abeilles_restantes)==0:  # pyright: ignore[reportUnnecessaryComparison] -> Warning faux due à la foncion bouton_stat
                         break
 
                     # INFO DEV : les retour de backend.creation_abeille ne sont pas None car verification de bouton_stat
@@ -232,6 +237,8 @@ def start():
                         afficher_toutes_les_abeilles(List_img)
                         print(len(List_img[joueur.id]))
                         abeilles_restantes.append(len(joueur.list_abeille)-1)#on rajoute l'indice de l'abeille à la liste par ex [0,1,2,3] + [4] car la nouvelle abeille est la cinquième
+                    elif retour_btn == 4:
+                        abeilles_restantes.clear()
                     # si le temps ajouter ici le système de déplacement automatique / IA
             # verif de fin de tour
             backend.update_abeille()
@@ -425,6 +432,8 @@ def stat_part(joueur:backend.joueur):
             color_creer :str = 'red'
         g.afficherTexte(f'{Nom[x]}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*(5+x*0.5)+config.sub_margin_btn,'orange',20)
         g.dessinerRectangle(config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*(5+x*0.5),config.size_btn_quit*2,config.size_btn_quit,color_creer)
+    g.afficherTexte(f'Fin de tour',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*(7)+config.sub_margin_btn,'orange',20)
+    g.dessinerRectangle(config.xmax_game+config.xmax_stat//2,(config.ymax_game//8)*(7),config.size_btn_quit*4,config.size_btn_quit,'green')
 
 
 
@@ -643,6 +652,9 @@ def bouton_stat(clic: backend.clic_custom,joueur:backend.joueur)->int:
         print("abeille : eclaireuse")
         if (backend.creation_abeille(joueur,'ouvrière')) is not None:
             return 3
+    elif (config.xmax_game+config.xmax_stat//4 <= clic.x <= (config.xmax_game+config.xmax_stat//4)+(config.size_btn_quit*8)) and ((config.ymax_game//8)*(7) <= clic.y <= ((config.ymax_game//8)*(7))+config.size_btn_quit):
+        print("Fin de tour")
+        return 4
         
     
     return -1

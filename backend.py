@@ -47,7 +47,8 @@ class abeille:
             nectar_max = 1
         self.force = force
         self.nectar_max = nectar_max
-        self.FE :int = 0 
+        self.FE :int = 0
+        self.autodep :tuple[bool,tuple[int,int]] = (False,(0,0))
 class joueur:
     def __init__(self, list_abeille:list[abeille]) -> None:
         self.list_abeille = list_abeille # liste d'abeille des joueurs
@@ -182,8 +183,8 @@ def case_valide(abeille:abeille)-> bool:
     """
     output2 = False
     compteur = 0
-    #print(f"verif {abeille.equipe}, {abeille.x} | {abeille.y} {map[abeille.x][abeille.y]}")
-    if  abeille.x > 15 and not abeille.etat: # empêche les déplacement dans la partie stat de l'écran ou que l'abeille soit KO
+    print(f"verif {abeille.equipe}, {abeille.x} | {abeille.y}")
+    if  ((not 0<=abeille.y<config.nb_carre)or (not 0<=abeille.y<config.nb_carre))  and (not abeille.etat) : # empêche les déplacement dans la partie stat de l'écran ou que l'abeille soit KO
         return False
     if map[abeille.x][abeille.y] == 0 or (map[abeille.x][abeille.y] == abeille.equipe or (10 <= map[abeille.x][abeille.y] <= (10 + config.max_nectar) )):
         output = False
@@ -466,7 +467,7 @@ def creation_abeille(joueur:joueur,classe:str) :
 def map_info(x:int,y:int)->list[int|str]:
     """
     Docstring for ya_quelqun
-    -> Renvoie les information de l'abeille en fonction si une abeille se trouve sur la position demandé
+    -> Renvoie les information ( équipe + classe )de l'abeille en fonction si une abeille se trouve sur la position demandé
 
     
     le renvoie sous la forme [equipe,classe]
@@ -485,6 +486,14 @@ def map_info(x:int,y:int)->list[int|str]:
                 return [liste_joueur_actuelle[fory].equipe,liste_joueur_actuelle[fory].classe]
     return [0,'rien']
 def escarmouche()->list[tuple[int,int]]:
+    """
+    Docstring for escarmouche
+    
+
+    Fonction gèrant le fonctionnement général des escarmouche avec la detection, le calcul des probabilité d'esquive et le renvoie d'une liste des abeille qui sont tombée au combat ( KO )
+    :return: Liste des abeille KO
+    :rtype: list[tuple[int, int]]
+    """
     escar = False
     liste_FE = []
     Fe_oppo = 0
@@ -493,12 +502,10 @@ def escarmouche()->list[tuple[int,int]]:
     for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
         liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
-            print(f"ab {y} joueur {x+1}")
             liste_position_autour = get_list_deplacement(liste_joueur_actuelle[y].x,liste_joueur_actuelle[y].y,3)
             for xl in range(len(liste_position_autour)-1):
                 # verification des position autour des abeille
                 tuple_xy = liste_position_autour[xl]
-                print(tuple_xy)
                 if ya_quelqun(tuple_xy[0],tuple_xy[1]):
                     abeille_ennemis = get_abeille_pos(tuple_xy[0],tuple_xy[1]) # On obtient l'abeille au point où on a detecté via ya_qqun() qui l'y avais un avais une abeille
                     # verification si l'abeille n'est pas allié et qu'elle n'est pas déjà KO
@@ -525,6 +532,16 @@ def escarmouche()->list[tuple[int,int]]:
                         escar = False
     return list_ko
 def get_oppo(liste:list[tuple[int,int]])->int:
+    """
+
+    Docstring for get_oppo
+    Renvoie le nombre d'opposant dans la liste de position donnée
+    
+    :param liste: Liste de position où il faut verifier s'il y a un opposant
+    :type liste: list[tuple[int, int]]
+    :return: Le nombre d'opposant dans la liste donnée
+    :rtype: int
+    """
     oppo = 0
     for liste_autour in range(len(liste)-1):
         tuple_xy = liste[liste_autour]
@@ -532,6 +549,19 @@ def get_oppo(liste:list[tuple[int,int]])->int:
             oppo += 1
     return oppo
 def get_abeille_pos(xv:int,yv:int)->abeille|None:
+    """
+    Docstring for get_abeille_pos
+
+    Fonction renvoie renvoyant l'abeille se trouvant sur la position donnés s'il y en une
+    Appel conseille avec ya_quelqun() pour le résultat ne renvoie pas de None
+    
+    :param xv: Position x de l'abeille a trouvé
+    :type xv: int
+    :param yv: Position y de l'abeille a trouvé
+    :type yv: int
+    :return: L'abeille trouvé" s'il y en a à cette position
+    :rtype: abeille | None
+    """
     for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
         liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
@@ -539,6 +569,11 @@ def get_abeille_pos(xv:int,yv:int)->abeille|None:
                 return liste_joueur_actuelle[y]
 
 def update_abeille():
+    """
+    Docstring for update_abeille
+
+    Fonction qui met a jour les carasteritique de l'abeille comme son état de retablisement ou le calcul de force effective avec son nombre d'opposant
+    """
     for x in range(len(lib_graphisme.Players)): # for pour le nombre de joueur
         liste_joueur_actuelle :list[abeille] = lib_graphisme.Players[x].list_abeille # liste d'abeille pour le joueur actuelle
         for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
@@ -557,6 +592,47 @@ def update_abeille():
                     print(f"Fin de Tour : L'abeille {y} du joueur {x+1} (classe : {liste_joueur_actuelle[y].classe}) peut maintenant de nouveau jouer")
             else:
                 print(f"Il reste plus que {liste_joueur_actuelle[y].compteur_KO} tour avant que l'abeille {y} du joueur {x+1} puissent rejouer")
+def auto_deplacement_list(abeille_j:abeille,clic:clic_custom)->tuple[bool,tuple[int,int]]:
+    """
+    Docstring for auto_deplacement_list
+
+    
+    :param abeille_j: A1beille a déplacer au point x,y
+    :type abeille_j: abeille
+    :param x: Position sur l'axe x où on veut déplacer l'abeille
+    :type x: int
+    :param y: Position sur l'axe y où on veut déplacer l'abeille
+    :type y: int
+    :return: Tuple contenant les info permettant de créer un chemin a suivre pour l'abeille
+            Pour ce tuple (True,(9,15))
+            Le true est que le deplacement automatique est activé, 9 pour le déplacement x en soit l'objectif est en abeille.x + 9
+            et la même chose pour le 15 
+    :rtype: tuple[bool, tuple[int, int]]
+    """
+    tuple_clic = lib_graphisme.clic_formate(clic)
+    x = tuple_clic[0]
+    y = tuple_clic[1]
+    output = (False,(0,0))
+    print(f"auto1 | {x} | {y} | {abeille_j.x_old} | {abeille_j.y_old}")
+    if 0 <= x < config.nb_carre_x and 0 <= y < config.nb_carre_y and (map[x][y] == 0 or 10 < map[x][y] <= 10+config.max_nectar or map[x][y]==abeille_j.equipe): # 
+        if x > abeille_j.x_old:
+            xauto = abs(abeille_j.x_old-x)
+        else:
+            xauto = (abeille_j.x_old-x)*-1
+        if y > abeille_j.y_old:
+            yauto = abs(abeille_j.y_old-y)
+        else:
+            yauto = (abeille_j.y_old-y)*-1
+        output = (True,(xauto,yauto))
+        if 0<=abeille_j.x_old+xauto<config.nb_carre_x and 0<=abeille_j.y_old+yauto<config.nb_carre_y:
+            print("conforme")
+        else:
+            print(f"FATAL : y_old:{abeille_j.y_old} |x_old: {abeille_j.x_old} | yauto:{yauto} | xauto : {xauto}")
+            print(f"FATAL info : destination : x:{x}, y:{y}")
+        print(f"log : y_old:{abeille_j.y_old} |x_old: {abeille_j.x_old} | yauto:{yauto} | xauto : {xauto}")
+        print(f"log info : destination : x:{x}, y:{y}")
+        print(output)
+    return output
 #-----------------------------------------------------------------------------------MAIN-----------------------------------------------------------------------------------#
 
 map = creation_matrice_map()

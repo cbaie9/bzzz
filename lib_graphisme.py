@@ -8,7 +8,7 @@ J2 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(2,1)),int(backen
 J3 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(3,1)),int(backend.get_spawn_coor(3,2)),3,'eclaireuse')]) # pyright: ignore[reportArgumentType]
 J4 = backend.joueur([backend.abeille(int(backend.get_spawn_coor(4,1)),int(backend.get_spawn_coor(4,2)),4,'eclaireuse')]) # pyright: ignore[reportArgumentType]
 global Players
-Players = [J1,J2,J3,J4]
+Players = [J1,J2]
 
 
 def dessiner_background(): #quadriage selon la couleur des spawn via la matrice map
@@ -41,19 +41,65 @@ def start():
     global g
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     actualisation_background_map()
-    liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,get_image_sprite(1,"ouvrière"))]
-    liste_img_p2 = [g.afficherImage(Players[1].list_abeille[0].x*config.taille_carre_x,Players[1].list_abeille[0].y*config.taille_carre_x,get_image_sprite(2,"ouvrière"))]
-    liste_img_p3 = [g.afficherImage(Players[2].list_abeille[0].x*config.taille_carre_x,Players[2].list_abeille[0].y*config.taille_carre_x,get_image_sprite(3,"ouvrière"))]
-    liste_img_p4 = [g.afficherImage(Players[3].list_abeille[0].x*config.taille_carre_x,Players[3].list_abeille[0].y*config.taille_carre_x,get_image_sprite(4,"ouvrière"))]
-    List_img :list[list[tke.ObjetGraphique]] = [liste_img_p1,liste_img_p2,liste_img_p3,liste_img_p4] 
+    if len(Players) == 2 : 
+        liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,get_image_sprite(1,"ouvrière"))]
+        liste_img_p2 = [g.afficherImage(Players[1].list_abeille[0].x*config.taille_carre_x,Players[1].list_abeille[0].y*config.taille_carre_x,get_image_sprite(2,"ouvrière"))]
+        List_img :list[list[tke.ObjetGraphique]] = [liste_img_p1,liste_img_p2] 
+    else : 
+        liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,get_image_sprite(1,"ouvrière"))]
+        liste_img_p2 = [g.afficherImage(Players[1].list_abeille[0].x*config.taille_carre_x,Players[1].list_abeille[0].y*config.taille_carre_x,get_image_sprite(2,"ouvrière"))]
+        liste_img_p3 = [g.afficherImage(Players[2].list_abeille[0].x*config.taille_carre_x,Players[2].list_abeille[0].y*config.taille_carre_x,get_image_sprite(3,"ouvrière"))]
+        liste_img_p4 = [g.afficherImage(Players[3].list_abeille[0].x*config.taille_carre_x,Players[3].list_abeille[0].y*config.taille_carre_x,get_image_sprite(4,"ouvrière"))]
+        List_img :list[list[tke.ObjetGraphique]] = [liste_img_p1,liste_img_p2,liste_img_p3,liste_img_p4] 
+     
     #-------------------Boucle principale
     while config.play:
         for joueur in Players:
             # Gestion du tour multi-abeilles
             abeilles_restantes = [i for i in range(len(joueur.list_abeille))] #création de la liste qui contient toutes les abeilles du joueur actuel sous forme [0,1,2] qui correspondent aux indices des abeilles
             for xlr in range(len(joueur.list_abeille)):
+                auto_dep = joueur.list_abeille[xlr].autodep
+                revert = False
                 if joueur.list_abeille[xlr].etat == False:
                     abeilles_restantes.remove(xlr) # enlevement des abeille ko de la liste d'abeille restant
+                elif auto_dep[0] == True and config.extra_auto_dep:
+                    x_dep = 0
+                    y_dep = 0
+                    depla = False #deplacement est-il déjà effectué
+                    extrac = auto_dep[1]
+                    print(extrac)
+                    if extrac[0] >= 0: # obtention du signe chemin calculé
+                        signex = 1
+                    else:
+                        signex = -1
+                    if extrac[1] >= 0:
+                        signey = 1
+                    else:
+                        signey = -1
+                    # autodeplacement du tour | on touche a une donnée abeille donc non optimisable dans un fonction
+                    if not extrac[0] == 0:
+                            x_dep = 1*signex
+                            depla = True
+                    if (not extrac[1] == 0) and ((not depla) or joueur.list_abeille[xlr].classe == "eclaireuse"):
+                        # deplacement en diagonal 
+                        y_dep = 1*signey
+                    joueur.list_abeille[xlr].x = joueur.list_abeille[xlr].x_old +x_dep
+                    joueur.list_abeille[xlr].y = joueur.list_abeille[xlr].y_old +y_dep
+                    print(f"autodep3 | {x_dep} | {y_dep} | {joueur.list_abeille[xlr].x_old}+{x_dep} = {joueur.list_abeille[xlr].x}")
+                    if not backend.case_valide(joueur.list_abeille[xlr]):
+                        revert = True
+                        print(f"autodep4.1 | {joueur.list_abeille[xlr].autodep} | {(True,(extrac[0],extrac[1]))}")
+                        joueur.list_abeille[xlr].y = joueur.list_abeille[xlr].y_old
+                        joueur.list_abeille[xlr].x = joueur.list_abeille[xlr].x_old
+                    else:
+                        joueur.list_abeille[xlr].autodep = (True,(extrac[0]+x_dep,extrac[1]+y_dep))
+                        joueur.list_abeille[xlr].x_old = joueur.list_abeille[xlr].x
+                        joueur.list_abeille[xlr].y_old = joueur.list_abeille[xlr].y
+                        print(f"autodep4.2 | {joueur.list_abeille[xlr].autodep} | {(True,(extrac[0],extrac[1]))}")
+                        abeilles_restantes.remove(xlr) # envlement due au fait que l'abeille a bougé en automatique
+                    if extrac[1] == 0 and  extrac[0] == 0:
+                        joueur.list_abeille[xlr].autodep = (False,(0,0))
+                print("###### \n Fin dump auto dep \n #####")
             while len(abeilles_restantes) > 0 and config.play: #tant qu'il y a des abeilles dans la liste / tant que le bouton stop croix rouge n'est pas cliqué
                 afficher_toutes_les_abeilles(List_img)
                 stat_part(joueur) # actulisation des statistique pour le joueur actuelle
@@ -111,21 +157,64 @@ def start():
                             joueur.list_abeille[abeille_selectionnee].nectar += nectar_add #l'abeille sélectionnée reçoit le nectar
                             stat_part(joueur)
                     else :
-                        # deplacement du joueur
-                        afficher_abeille(joueur.list_abeille[abeille_selectionnee],List_img[joueur.id][abeille_selectionnee]) # [MODIF]
-                        dessiner_spawn()
-                        afficher_toutes_les_abeilles(List_img)
+                        deplacement_joueur(joueur,abeille_selectionnee,List_img)
                     
                     abeilles_restantes.remove(abeille_selectionnee) #on retire l'abeille qui vient d'être faite 
                 else :
                     # colision btn stat
                     retour_btn = bouton_stat(clic_custom,joueur) # deplacer dans fonction dédié | clic custom = classe pour éviter les pbm de typpage
-                    #
-                    # si le temps ajouter ici le système de déplacement automatique / IA
-                    # --- ICI --- #
-                    # ----------- #
-                    joueur.list_abeille[abeille_selectionnee].y = joueur.list_abeille[abeille_selectionnee].y_old
-                    joueur.list_abeille[abeille_selectionnee].x = joueur.list_abeille[abeille_selectionnee].x_old
+                    
+                    if config.extra_auto_dep:
+                        # deplacement automatique si on ne clique sur une case qui n'est pas automatiquement valide
+                        print("######### \n Debut dump auto deplacement \n #####")
+                        tuple_auto_dep = backend.auto_deplacement_list(joueur.list_abeille[abeille_selectionnee],clic_custom) # Préparation  et calcul du trajet autodeplacement
+                        revert = False
+                        if tuple_auto_dep[0]:
+                            x_dep = 0
+                            y_dep = 0
+                            depla = False #deplacement est-il déjà effectué
+                            joueur.list_abeille[abeille_selectionnee].autodep = tuple_auto_dep
+                            extrac = tuple_auto_dep[1]
+                            print(extrac)
+                            if extrac[0] >= 0: # obtention du signe chemin calculé
+                                signex = 1
+                            else:
+                                signex = -1
+                            if extrac[1] >= 0:
+                                signey = 1
+                            else:
+                                signey = -1
+                            # autodeplacement du tour | on touche a une donnée abeille donc non optimisable dans un fonction
+                            if not extrac[0] == 0:
+                                x_dep = 1*signex
+                                depla = True
+                            if (not joueur.list_abeille[abeille_selectionnee].autodep[1][1] == 0) and ((not depla) or joueur.list_abeille[abeille_selectionnee].classe == "eclaireuse"):
+                                # deplacement en diagonal 
+                                y_dep = 1*signey
+                            joueur.list_abeille[abeille_selectionnee].x = joueur.list_abeille[abeille_selectionnee].x_old +x_dep
+                            joueur.list_abeille[abeille_selectionnee].y = joueur.list_abeille[abeille_selectionnee].y_old +y_dep
+                            print(f"autodep3 | {x_dep} | {y_dep} | {joueur.list_abeille[abeille_selectionnee].x_old}+{x_dep} = {joueur.list_abeille[abeille_selectionnee].x}")
+                            if not backend.case_valide(joueur.list_abeille[abeille_selectionnee]):
+                                revert = True
+                                print(f"autodep4.1 | {joueur.list_abeille[abeille_selectionnee].autodep} | {(True,(extrac[0],extrac[1]))}")
+                            else:
+                                joueur.list_abeille[abeille_selectionnee].autodep = (True,(extrac[0]+x_dep,extrac[1]+y_dep))
+                                joueur.list_abeille[abeille_selectionnee].x_old = joueur.list_abeille[abeille_selectionnee].x
+                                joueur.list_abeille[abeille_selectionnee].y_old = joueur.list_abeille[abeille_selectionnee].y
+                                print(f"autodep4.2 | {joueur.list_abeille[abeille_selectionnee].autodep} | {(True,(extrac[0],extrac[1]))}")
+                                abeilles_restantes.remove(abeille_selectionnee) # envlement due au fait que l'abeille a bougé en automatique
+                            if extrac[1] == 0 and  extrac[0] == 0:
+                                joueur.list_abeille[abeille_selectionnee].autodep = (False,(0,0))
+                        if not tuple_auto_dep[0] or revert:
+                            print(f"autodep4.1.1")
+                            joueur.list_abeille[abeille_selectionnee].y = joueur.list_abeille[abeille_selectionnee].y_old
+                            joueur.list_abeille[abeille_selectionnee].x = joueur.list_abeille[abeille_selectionnee].x_old
+                        
+                        print("###### \n Fin dump auto dep \n #####")
+                    else:
+                        joueur.list_abeille[abeille_selectionnee].y = joueur.list_abeille[abeille_selectionnee].y_old
+                        joueur.list_abeille[abeille_selectionnee].x = joueur.list_abeille[abeille_selectionnee].x_old
+                    actualisation_background_map() 
                     afficher_abeille(joueur.list_abeille[abeille_selectionnee],List_img[joueur.id][abeille_selectionnee])
                     if config.play == False:  # pyright: ignore[reportUnnecessaryComparison] -> Warning faux due à la foncion bouton_stat
                         break
@@ -134,6 +223,7 @@ def start():
                     #
                     #
                     elif 1 <= retour_btn  <= 3:
+                        # creation des abeille quand selection déjà effectué | Je sais que le code est déjà au dessus mais non optimisable ( dans un fonction) sinon les donnée ne sont pas sauvegardées dans la fonction
                         classe_str = ['ouvrière','bourdon','eclaireuse']
                         joueur.list_abeille.append(backend.creation_abeille(joueur,classe_str[retour_btn-1])) # type: ignore 
                         joueur.nectar -= config.cout_ponte
@@ -146,14 +236,14 @@ def start():
             # verif de fin de tour
             backend.update_abeille()
             list_ko = backend.escarmouche()
-            for xlist_escar in range(len(list_ko)):
-                tuple_ko :tuple[int,int] = list_ko[xlist_escar]
+            for xlist_escar in range(len(list_ko)): # extraction des données de la fonction
+                tuple_ko :tuple[int,int] = list_ko[xlist_escar] # puis mise ko des abeille concernée
                 Players[tuple_ko[0]].list_abeille[tuple_ko[1]].compteur_KO = config.Time_KO
                 Players[tuple_ko[0]].list_abeille[tuple_ko[1]].etat = False
                 if tuple_ko[1] in abeilles_restantes:
-                    abeilles_restantes.remove(tuple_ko[1])
+                    abeilles_restantes.remove(tuple_ko[1]) # fix qu'un abeille KO ne peut pas jouer
             fin_de_tour(joueur)
-            # info non je peut pas bouger ça dans une fonction ça marche pas dans ma config
+            # info non je peut pas bouger ça dans une fonction ça marche pas dans l'architecture du code
             for x in range(len(Players)): # for pour le nombre de joueur
                 liste_joueur_actuelle :list[backend.abeille] = Players[x].list_abeille # liste d'abeille pour le joueur actuelle
                 for y in range(len(liste_joueur_actuelle)): # for pour la liste d'abeille / joueur
@@ -584,6 +674,25 @@ def nectar_epuise()->tuple[bool,int]:
             fin = True
             break
     return (fin,joueur)
+def deplacement_joueur(joueur:backend.joueur,id_selec:int,list_img:list[list[tke.ObjetGraphique]]):
+    """
+    Docstring for deplacement_joueur
+
+    Fonction qui lance d'autre fonction qui s'execute lors du deplacement du joueur | optimisation de la fonction principal
+    
+    :param joueur: Description
+    :type joueur: backend.joueur
+    :param id_selec: Description
+    :type id_selec: int
+    :param list_img: Description
+    :type list_img: list[list[tke.ObjetGraphique]]
+    """
+    # deplacement du joueur
+    afficher_abeille(joueur.list_abeille[id_selec],list_img[joueur.id][id_selec]) # [MODIF]
+    dessiner_spawn()
+    afficher_toutes_les_abeilles(list_img)
+    
+    
 ### lanecement du jeu ( info -> mettre les fonction avant pls)
 if __name__ == "__main__": # Lance le jeu quand lancé seul 
     menu()

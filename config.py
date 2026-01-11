@@ -60,6 +60,9 @@ taille_texture_abeille :int = 50 # taille de la texture abeille_menu.png
 size_btn_quit = int(xmax_game*0.05)
 margin_cross :int = int(size_btn_quit*0.20)
 sub_margin_btn :int = 25
+# ----------------------
+# Extra : deplacement auto 
+extra_auto_dep :bool = False
 # --------------------
 # Verification des règles de configuration
 if max_nectar % 3 != 0:

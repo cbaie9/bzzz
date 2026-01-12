@@ -41,7 +41,10 @@ def start():
     global g
     g = tke.ouvrirFenetre(config.xmax, config.ymax_game)
     actualisation_background_map()
-    if len(Players) == 2 : 
+    if len(Players) == 1:
+        liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,get_image_sprite(1,"ouvrière"))]
+        List_img :list[list[tke.ObjetGraphique]] = [liste_img_p1] 
+    elif len(Players) == 2 : 
         liste_img_p1 = [g.afficherImage(Players[0].list_abeille[0].x*config.taille_carre_x,Players[0].list_abeille[0].y*config.taille_carre_x,get_image_sprite(1,"ouvrière"))]
         liste_img_p2 = [g.afficherImage(Players[1].list_abeille[0].x*config.taille_carre_x,Players[1].list_abeille[0].y*config.taille_carre_x,get_image_sprite(2,"ouvrière"))]
         List_img :list[list[tke.ObjetGraphique]] = [liste_img_p1,liste_img_p2] 
@@ -140,6 +143,7 @@ def start():
                 print(f"########### \n fin selection : \n abeille selectionne :{abeille_selectionnee} | x: {joueur.list_abeille[abeille_selectionnee].x} | y: {joueur.list_abeille[abeille_selectionnee].y} \n ########")
                 #          ICI
                 # ---------------------- # 
+                stat_part(joueur,abeille_selectionnee)
                 dessiner_case_deplacement(joueur.list_abeille[abeille_selectionnee])  # affichage des déplacement possible par le joueur
                 afficher_toutes_les_abeilles(List_img)
                 clic = g.attendreClic()
@@ -396,7 +400,7 @@ def menu_background():
     g.dessinerRectangle((config.taille_mini/2)-(config.taille_mini/4),(config.taille_mini)-((config.taille_mini/8))-(config.taille_mini/16),config.taille_mini/2,config.taille_mini/8,'black')
     g.afficherTexte("Jouer",config.taille_mini/2,config.taille_mini-config.taille_mini/8,'white')
 
-def stat_part(joueur:backend.joueur):
+def stat_part(joueur:backend.joueur,select:int=-1):
     """
     Docstring for stat_part
 
@@ -406,7 +410,10 @@ def stat_part(joueur:backend.joueur):
     :type joueur: backend.joueur
     """
     global g
-    
+    slnum = 0
+    if not select == -1:
+         slnum :int = select
+    print(slnum)
     g.dessinerRectangle(config.xmax_game,0,config.xmax_stat,config.ymax_game,'gray')
     for x in range(0,4):
         color = ['green','purple','blue','red']
@@ -415,7 +422,7 @@ def stat_part(joueur:backend.joueur):
         if joueur.id == x:
             #print(x,y)
             g.afficherTexte(f'J{y}',config.xmax_game+20,((config.ymax_game//8)*y)-30,color[x],20)
-            g.afficherTexte(f'Nectar ab0 {Players[x].list_abeille[0].nectar}',config.xmax_game+config.xmax_stat//4,(config.ymax_game//8)*y,color[x],20)
+            g.afficherTexte(f'Nectar abeille {slnum} {Players[x].list_abeille[slnum].nectar}',config.xmax_game+config.xmax_stat//4+25,(config.ymax_game//8)*y,color[x],20)
             g.afficherTexte(f'Nectar {Players[x].nectar}',(config.xmax_game+config.xmax_stat)-config.xmax_stat//4,(config.ymax_game//8)*y,color[x],20)
     #btn exit
     g.dessinerRectangle((config.xmax_game+config.xmax_stat)-config.size_btn_quit,0,config.size_btn_quit,config.size_btn_quit,'red')
